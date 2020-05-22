@@ -2,7 +2,7 @@
 Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 """
-from utils import get_config
+from utils import get_config,domain_code_split
 import argparse
 from torch import nn
 from torch.autograd import Variable
@@ -165,8 +165,8 @@ class Master_Gen(nn.Module):
         self.enc_style = StyleEncoder(4, input_dim, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)
 
         # content encoder
-        self.enc_content = ContentEncoder(n_downsample, n_res, input_dim, dim, 'in', activ, pad_type=pad_type)
-        self.dec = Decoder(n_downsample, n_res, self.enc_content.output_dim, input_dim, res_norm='adain', activ=activ, pad_type=pad_type)
+        self.enc_content = ContentEncoder(n_downsample, n_res, 3, dim, 'in', activ, pad_type=pad_type)
+        self.dec = Decoder(n_downsample, n_res, self.enc_content.output_dim, 3, res_norm='adain', activ=activ, pad_type=pad_type)
 
         # MLP to generate AdaIN parameters
         self.mlp = MLP(style_dim, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
@@ -174,6 +174,7 @@ class Master_Gen(nn.Module):
     def encode(self, images):
         # encode an image to its content and style codes
         style_fake = self.enc_style(images)
+        images = domain_code_split(images)
         content = self.enc_content(images)
         return content, style_fake
         

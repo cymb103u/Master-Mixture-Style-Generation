@@ -2,8 +2,9 @@
 Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 """
-from master_networks import AdaINGen, MsImageDis, VAEGen
-from utils import weights_init, get_model_list, vgg_preprocess, load_vgg16, get_scheduler,get_config
+from master_networks import AdaINGen, MsImageDis, VAEGen,Master_Gen
+from utils import weights_init, get_model_list, vgg_preprocess, load_vgg16,\
+     get_scheduler,get_config,domain_code_split,domain_code_produce
 from torch.autograd import Variable
 import torch
 import torch.nn as nn
@@ -205,7 +206,7 @@ class MASTER_Trainer(nn.Module):
         super(MASTER_Trainer , self).__init__()
         lr = hyperparameters['lr']
         
-        self.gen = AdaINGen(hyperparameters['input_dim']+hyperparameters['dom_num'],hyperparameters['gen']) # Auto-encoder + domain code
+        self.gen = Master_Gen(hyperparameters['input_dim']+hyperparameters['dom_num'],hyperparameters['gen']) # Auto-encoder + domain code
         self.dis_a = MsImageDis(hyperparameters['input_dim_a'], hyperparameters['dis']) # discriminator for domain a
         self.dis_b = MsImageDis(hyperparameters['input_dim_b'], hyperparameters['dis']) # discriminator for domain b
         self.instancenorm = nn.InstanceNorm2d(512, affine=False) # for VGG compute loss
@@ -250,12 +251,7 @@ class MASTER_Trainer(nn.Module):
         x_ba = self.gen.decode(c_b, s_a)
         x_ab = self.gen.decode(c_a, s_b)
         self.train()
-        return x_ab, x_ba
-    def domain_code_produce(self,params,spec_dom,batch_size,map_zise):
-        dom_code = torch.zeros(batch_size,params['dom_num'],map_zise,map_zise)
-        dom_code[:,spec_dom,:,:] = torch.ones(1,map_zise,map_zise)
 
-        return dom_code
 
     def recon_criterion(self, input, target):
         return torch.mean(torch.abs(input - target))
@@ -280,13 +276,22 @@ class MASTER_Trainer(nn.Module):
         # decode (cross domain)
         x_ba = self.gen.decode(c_b, s_a)
         x_ab = self.gen.decode(c_a, s_b)
+        # add domain code
+        x_ba =torch.cat((x_ba,domain_code_produce(hyperparameters,hyperparameters['batch_size'],0)),1)
+        x_ab =torch.cat((x_ab,domain_code_produce(hyperparameters,hyperparameters['batch_size'],1)),1)
         # encode again
         c_b_recon, s_a_recon = self.gen.encode(x_ba)
         c_a_recon, s_b_recon = self.gen.encode(x_ab)
+        # return
+        x_ba = domain_code_split(x_ba)
+        x_ab = domain_code_split(x_ab)
         # decode again (if needed)
         x_aba = self.gen.decode(c_a_recon, s_a_prime) if hyperparameters['recon_x_cyc_w'] > 0 else None
         x_bab = self.gen.decode(c_b_recon, s_b_prime) if hyperparameters['recon_x_cyc_w'] > 0 else None
 
+        #return
+        x_a = domain_code_split(x_a)
+        x_b = domain_code_split(x_b)
         # reconstruction loss
         self.loss_gen_recon_x_a = self.recon_criterion(x_a_recon, x_a)
         self.loss_gen_recon_x_b = self.recon_criterion(x_b_recon, x_b)
@@ -328,6 +333,9 @@ class MASTER_Trainer(nn.Module):
         # decode (cross domain)
         x_ba = self.gen.decode(c_b, s_a)
         x_ab = self.gen.decode(c_a, s_b)
+        # return
+        x_a = domain_code_split(x_a)
+        x_b = domain_code_split(x_b)
         # D loss
         self.loss_dis_a = self.dis_a.calc_dis_loss(x_ba.detach(), x_a)
         self.loss_dis_b = self.dis_b.calc_dis_loss(x_ab.detach(), x_b)
@@ -362,6 +370,9 @@ class MASTER_Trainer(nn.Module):
         x_a_recon, x_b_recon = torch.cat(x_a_recon), torch.cat(x_b_recon)
         x_ba1, x_ba2 = torch.cat(x_ba1), torch.cat(x_ba2)
         x_ab1, x_ab2 = torch.cat(x_ab1), torch.cat(x_ab2)
+        # return 
+        x_a = domain_code_split(x_a)
+        x_b = domain_code_split(x_b)
         self.train()
         return x_a, x_a_recon, x_ab1, x_ab2, x_b, x_b_recon, x_ba1, x_ba2
     

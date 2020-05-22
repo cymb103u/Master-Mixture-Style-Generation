@@ -26,7 +26,7 @@ parser.add_argument('--trainer', type=str, default='MASTER', help="MASTER|MUNIT|
 opts = parser.parse_args()
 cudnn.benchmark = True
 
-GPU = 0
+GPU = 1
 torch.cuda.set_device(GPU)
 
 # Load experiment setting
