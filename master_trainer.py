@@ -592,8 +592,8 @@ class MASTER_Trainer_v2(nn.Module):
         x_b_recon = self.gen.decode(c_b,s_b)
         x_ab1 = self.gen.decode(c_a,s_b)
         x_ba1 = self.gen.decode(c_b,s_a)
-        x_ab2 = self.gen.decode(c_a,s_a_pre)
-        x_ba2 = self.gen.decode(c_b,s_b_pre)
+        x_ab2 = self.gen.decode(c_a,s_b_pre)
+        x_ba2 = self.gen.decode(c_b,s_a_pre)
 
         # return 
         x_a = domain_code_split(x_a)
