@@ -26,7 +26,7 @@ parser.add_argument('--trainer', type=str, default='MASTER_v2', help="MASTER|MUN
 opts = parser.parse_args()
 cudnn.benchmark = True
 
-GPU = 1
+GPU = 0
 torch.cuda.set_device(GPU)
 
 # Load experiment setting
@@ -77,7 +77,7 @@ iterations = trainer.resume(checkpoint_directory, hyperparameters=config) if opt
 # Domain code produce
 dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
 dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
-'''
+
 while True:
     for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
         trainer.update_learning_rate()
@@ -118,7 +118,6 @@ while True:
         iterations += 1
         if iterations >= max_iter:
             sys.exit('Finish training')
-'''
-image_outputs = trainer.sample(train_display_images_a, train_display_images_b)
+
 
 
