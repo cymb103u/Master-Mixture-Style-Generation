@@ -26,7 +26,7 @@ parser.add_argument('--trainer', type=str, default='MASTER_v2', help="MASTER|MUN
 opts = parser.parse_args()
 cudnn.benchmark = True
 
-GPU = 1
+GPU = 6
 torch.cuda.set_device(GPU)
 
 # Load experiment setting
@@ -56,13 +56,13 @@ train_display_images_b = torch.stack([train_loader_b.dataset[i] for i in range(d
 test_display_images_a = torch.stack([test_loader_a.dataset[i] for i in range(display_size)]).cuda()
 test_display_images_b = torch.stack([test_loader_b.dataset[i] for i in range(display_size)]).cuda()
 
-# add domain code
-dom_zero = domain_code_produce(config,display_size,0).cuda()
-dom_one = domain_code_produce(config,display_size,1).cuda()
-train_display_images_a = torch.cat((train_display_images_a,dom_zero),dim=1)
-train_display_images_b = torch.cat((train_display_images_b,dom_one),dim=1)
-test_display_images_a = torch.cat((test_display_images_a,dom_zero),dim=1)
-test_display_images_b = torch.cat((test_display_images_b,dom_one),dim=1)
+# # add domain code
+# dom_zero = domain_code_produce(config,display_size,0).cuda()
+# dom_one = domain_code_produce(config,display_size,1).cuda()
+# train_display_images_a = torch.cat((train_display_images_a,dom_zero),dim=1)
+# train_display_images_b = torch.cat((train_display_images_b,dom_one),dim=1)
+# test_display_images_a = torch.cat((test_display_images_a,dom_zero),dim=1)
+# test_display_images_b = torch.cat((test_display_images_b,dom_one),dim=1)
 
 # Setup logger and output folders
 model_name = os.path.splitext(os.path.basename(opts.config))[0]
@@ -74,22 +74,20 @@ shutil.copy(opts.config, os.path.join(output_directory, 'config.yaml')) # copy c
 # Start training
 iterations = trainer.resume(checkpoint_directory, hyperparameters=config) if opts.resume else 0
 
-# Domain code produce
-dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
-dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
+# # Domain code produce
+# dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
+# dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
 
 while True:
     for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
-        trainer.update_learning_rate()
         images_a, images_b = images_a.cuda().detach(), images_b.cuda().detach()
-        images_a =torch.cat((images_a,dom_zero),dim=1).cuda().detach()
-        images_b =torch.cat((images_b,dom_one),dim=1).cuda().detach()
 
         with Timer("Elapsed time in update: %f"):
             # Main training code
             trainer.dis_update(images_a, images_b, config)
             trainer.gen_update(images_a, images_b, config)
             torch.cuda.synchronize()
+        trainer.update_learning_rate()
 
         # Dump training stats in log file
         if (iterations + 1) % config['log_iter'] == 0:

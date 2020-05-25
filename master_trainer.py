@@ -206,9 +206,9 @@ class MASTER_Trainer(nn.Module):
         super(MASTER_Trainer , self).__init__()
         lr = hyperparameters['lr']
         
-        self.gen = Master_Gen(hyperparameters['input_dim']+hyperparameters['dom_num'],hyperparameters['gen']) # Auto-encoder + domain code
-        self.dis_a = MsImageDis(hyperparameters['input_dim_a'], hyperparameters['dis']) # discriminator for domain a
-        self.dis_b = MsImageDis(hyperparameters['input_dim_b'], hyperparameters['dis']) # discriminator for domain b
+        self.gen = Master_Gen(hyperparameters['input_dim'],hyperparameters['gen']) # Auto-encoder + domain code
+        self.dis_a = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain a
+        self.dis_b = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain b
         self.instancenorm = nn.InstanceNorm2d(512, affine=False) # for VGG compute loss
         self.style_dim = hyperparameters['gen']['style_dim']
 
@@ -246,8 +246,8 @@ class MASTER_Trainer(nn.Module):
         self.eval()
         s_a = Variable(self.s_a)
         s_b = Variable(self.s_b)
-        c_a, s_a_fake = self.gen.encode(x_a)
-        c_b, s_b_fake = self.gen.encode(x_b)
+        c_a, s_a_fake = self.gen.encode(x_a,0)
+        c_b, s_b_fake = self.gen.encode(x_b,1)
         x_ba = self.gen.decode(c_b, s_a)
         x_ab = self.gen.decode(c_a, s_b)
         self.train()
@@ -268,8 +268,8 @@ class MASTER_Trainer(nn.Module):
         s_a = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
         s_b = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
         # encode
-        c_a, s_a_prime = self.gen.encode(x_a)
-        c_b, s_b_prime = self.gen.encode(x_b)
+        c_a, s_a_prime = self.gen.encode(x_a,0)
+        c_b, s_b_prime = self.gen.encode(x_b,1)
         # decode (within domain)
         x_a_recon = self.gen.decode(c_a, s_a_prime)
         x_b_recon = self.gen.decode(c_b, s_b_prime)
@@ -280,18 +280,13 @@ class MASTER_Trainer(nn.Module):
         x_ba =torch.cat((x_ba,domain_code_produce(hyperparameters,hyperparameters['batch_size'],0)),1)
         x_ab =torch.cat((x_ab,domain_code_produce(hyperparameters,hyperparameters['batch_size'],1)),1)
         # encode again
-        c_b_recon, s_a_recon = self.gen.encode(x_ba)
-        c_a_recon, s_b_recon = self.gen.encode(x_ab)
-        # return
-        x_ba = domain_code_split(x_ba)
-        x_ab = domain_code_split(x_ab)
+        c_b_recon, s_a_recon = self.gen.encode(x_ba,0)
+        c_a_recon, s_b_recon = self.gen.encode(x_ab,1)
+
         # decode again (if needed)
         x_aba = self.gen.decode(c_a_recon, s_a_prime) if hyperparameters['recon_x_cyc_w'] > 0 else None
         x_bab = self.gen.decode(c_b_recon, s_b_prime) if hyperparameters['recon_x_cyc_w'] > 0 else None
 
-        #return
-        x_a = domain_code_split(x_a)
-        x_b = domain_code_split(x_b)
         # reconstruction loss
         self.loss_gen_recon_x_a = self.recon_criterion(x_a_recon, x_a)
         self.loss_gen_recon_x_b = self.recon_criterion(x_b_recon, x_b)
@@ -328,14 +323,12 @@ class MASTER_Trainer(nn.Module):
         s_a = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
         s_b = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
         # encode
-        c_a, _ = self.gen.encode(x_a)
-        c_b, _ = self.gen.encode(x_b)
+        c_a, _ = self.gen.encode(x_a,0)
+        c_b, _ = self.gen.encode(x_b,1)
         # decode (cross domain)
         x_ba = self.gen.decode(c_b, s_a)
         x_ab = self.gen.decode(c_a, s_b)
-        # return
-        x_a = domain_code_split(x_a)
-        x_b = domain_code_split(x_b)
+
         # D loss
         self.loss_dis_a = self.dis_a.calc_dis_loss(x_ba.detach(), x_a)
         self.loss_dis_b = self.dis_b.calc_dis_loss(x_ab.detach(), x_b)
@@ -359,8 +352,8 @@ class MASTER_Trainer(nn.Module):
         s_b2 = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
         x_a_recon, x_b_recon, x_ba1, x_ba2, x_ab1, x_ab2 = [], [], [], [], [], []
         for i in range(x_a.size(0)):
-            c_a, s_a_fake = self.gen.encode(x_a[i].unsqueeze(0))
-            c_b, s_b_fake = self.gen.encode(x_b[i].unsqueeze(0))
+            c_a, s_a_fake = self.gen.encode(x_a[i].unsqueeze(0),0)
+            c_b, s_b_fake = self.gen.encode(x_b[i].unsqueeze(0),1)
             x_a_recon.append(self.gen.decode(c_a, s_a_fake))
             x_b_recon.append(self.gen.decode(c_b, s_b_fake))
             x_ba1.append(self.gen.decode(c_b, s_a1[i].unsqueeze(0)))
@@ -411,9 +404,9 @@ class MASTER_Trainer_v2(nn.Module):
         super(MASTER_Trainer_v2 , self).__init__()
         lr = hyperparameters['lr']
         
-        self.gen = Master_Gen(hyperparameters['input_dim']+hyperparameters['dom_num'],hyperparameters['gen']) # Auto-encoder + domain code
-        self.dis_a = MsImageDis(hyperparameters['input_dim_a'], hyperparameters['dis']) # discriminator for domain a
-        self.dis_b = MsImageDis(hyperparameters['input_dim_b'], hyperparameters['dis']) # discriminator for domain b
+        self.gen = Master_Gen(hyperparameters['input_dim'],hyperparameters['gen']) # Auto-encoder + domain code
+        self.dis_a = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain a
+        self.dis_b = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain b
         self.instancenorm = nn.InstanceNorm2d(512, affine=False) # for VGG compute loss
         self.style_dim = hyperparameters['gen']['style_dim']
 
@@ -451,8 +444,8 @@ class MASTER_Trainer_v2(nn.Module):
         self.eval()
         # s_a = Variable(self.s_a)
         # s_b = Variable(self.s_b)
-        c_a, s_a_fake = self.gen.encode(x_a)
-        c_b, s_b_fake = self.gen.encode(x_b)
+        c_a, s_a_fake = self.gen.encode(x_a,0)
+        c_b, s_b_fake = self.gen.encode(x_b,1)
         x_ba = self.gen.decode(c_b, s_a_fake)
         x_ab = self.gen.decode(c_a, s_b_fake)
         self.train()
@@ -473,30 +466,23 @@ class MASTER_Trainer_v2(nn.Module):
         # s_a = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
         # s_b = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
         # encode
-        c_a, s_a_prime = self.gen.encode(x_a)
-        c_b, s_b_prime = self.gen.encode(x_b)
+        c_a, s_a_prime = self.gen.encode(x_a,0)
+        c_b, s_b_prime = self.gen.encode(x_b,1)
         # decode (within domain)
         x_a_recon = self.gen.decode(c_a, s_a_prime)
         x_b_recon = self.gen.decode(c_b, s_b_prime)
         # decode (cross domain)
         x_ba = self.gen.decode(c_b, s_a_prime)
         x_ab = self.gen.decode(c_a, s_b_prime)
-        # add domain code
-        x_ba =torch.cat((x_ba,domain_code_produce(hyperparameters,hyperparameters['batch_size'],0)),1)
-        x_ab =torch.cat((x_ab,domain_code_produce(hyperparameters,hyperparameters['batch_size'],1)),1)
+        
         # encode again
-        c_b_recon, s_a_recon = self.gen.encode(x_ba)
-        c_a_recon, s_b_recon = self.gen.encode(x_ab)
-        # return
-        x_ba = domain_code_split(x_ba)
-        x_ab = domain_code_split(x_ab)
+        c_b_recon, s_a_recon = self.gen.encode(x_ba,0)
+        c_a_recon, s_b_recon = self.gen.encode(x_ab,1)
+ 
         # decode again (if needed)
         x_aba = self.gen.decode(c_a_recon, s_a_prime) if hyperparameters['recon_x_cyc_w'] > 0 else None
         x_bab = self.gen.decode(c_b_recon, s_b_prime) if hyperparameters['recon_x_cyc_w'] > 0 else None
 
-        #return
-        x_a = domain_code_split(x_a)
-        x_b = domain_code_split(x_b)
         # reconstruction loss
         self.loss_gen_recon_x_a = self.recon_criterion(x_a_recon, x_a)
         self.loss_gen_recon_x_b = self.recon_criterion(x_b_recon, x_b)
@@ -533,14 +519,12 @@ class MASTER_Trainer_v2(nn.Module):
         # s_a = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
         # s_b = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
         # encode
-        c_a, s_a_prime = self.gen.encode(x_a)
-        c_b, s_b_prime = self.gen.encode(x_b)
+        c_a, s_a_prime = self.gen.encode(x_a,0)
+        c_b, s_b_prime = self.gen.encode(x_b,1)
         # decode (cross domain)
         x_ba = self.gen.decode(c_b, s_a_prime)
         x_ab = self.gen.decode(c_a, s_b_prime)
-        # return
-        x_a = domain_code_split(x_a)
-        x_b = domain_code_split(x_b)
+
         # D loss
         self.loss_dis_a = self.dis_a.calc_dis_loss(x_ba.detach(), x_a)
         self.loss_dis_b = self.dis_b.calc_dis_loss(x_ab.detach(), x_b)
@@ -562,23 +546,20 @@ class MASTER_Trainer_v2(nn.Module):
         
         x_a_perm = x_a[torch.randperm(x_a.size(0))]
         x_b_perm = x_b[torch.randperm(x_b.size(0))]
-        
-        c_a , s_a = self.gen.encode(x_a)
-        c_b , s_b = self.gen.encode(x_b)
-        _ , s_a_perm = self.gen.encode(x_a_perm)
-        _ , s_b_perm = self.gen.encode(x_b_perm)
-
-        x_a_recon = self.gen.decode(c_a,s_a)
-        x_b_recon = self.gen.decode(c_b,s_b)
-        x_ab1 = self.gen.decode(c_a,s_b)
-        x_ba1 = self.gen.decode(c_b,s_a)
-        x_ab2 = self.gen.decode(c_a,s_b_perm)
-        x_ba2 = self.gen.decode(c_b,s_a_perm)
-
-        # return 
-        x_a = domain_code_split(x_a)
-        x_b = domain_code_split(x_b)
-
+        for i in range(x_a.size(0)):
+            c_a , s_a = self.gen.encode(x_a[i].unsqueeze(0),0)
+            c_b , s_b = self.gen.encode(x_b[i].unsqueeze(0),1)
+            _ , s_a_perm = self.gen.encode(x_a_perm[i].unsqueeze(0),0)
+            _ , s_b_perm = self.gen.encode(x_b_perm[i].unsqueeze(0),1)
+            x_a_recon.append(self.gen.decode(c_a,s_a))
+            x_b_recon.append(self.gen.decode(c_b,s_b))
+            x_ab1.append(self.gen.decode(c_a,s_b))
+            x_ba1.append(self.gen.decode(c_b,s_a))
+            x_ab2.append(self.gen.decode(c_a,s_b_perm))
+            x_ba2.append(self.gen.decode(c_b,s_a_perm))
+        x_a_recon, x_b_recon = torch.cat(x_a_recon), torch.cat(x_b_recon)
+        x_ba1, x_ba2 = torch.cat(x_ba1), torch.cat(x_ba2)
+        x_ab1, x_ab2 = torch.cat(x_ab1), torch.cat(x_ab2)
         self.train()
         return x_a, x_a_recon, x_ab1, x_ab2, x_b, x_b_recon, x_ba1, x_ba2
     

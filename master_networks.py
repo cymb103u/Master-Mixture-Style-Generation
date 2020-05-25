@@ -2,7 +2,7 @@
 Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 """
-from utils import get_config,domain_code_split
+from utils import get_config,domain_code_split,domain_code_produce
 import argparse
 from torch import nn
 from torch.autograd import Variable
@@ -160,22 +160,26 @@ class Master_Gen(nn.Module):
         activ = params['activ']
         pad_type = params['pad_type']
         mlp_dim = params['mlp_dim']
-
+        dom_num = params['dom_num']
+        self.dom_code = [domain_code_produce(dom_num,1,256,i) for i in range(dom_num)]
+        
         # style encoder
-        self.enc_style = StyleEncoder(4, input_dim, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)
+        self.enc_style = StyleEncoder(4, input_dim+dom_num, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)
 
         # content encoder
-        self.enc_content = ContentEncoder(n_downsample, n_res, 3, dim, 'in', activ, pad_type=pad_type)
-        self.dec = Decoder(n_downsample, n_res, self.enc_content.output_dim, 3, res_norm='adain', activ=activ, pad_type=pad_type)
+        self.enc_content = ContentEncoder(n_downsample, n_res, input_dim, dim, 'in', activ, pad_type=pad_type)
+        self.dec = Decoder(n_downsample, n_res, self.enc_content.output_dim, input_dim, res_norm='adain', activ=activ, pad_type=pad_type)
 
         # MLP to generate AdaIN parameters
         self.mlp = MLP(style_dim, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
 
-    def encode(self, images):
+    def encode(self, images,dom_spc):
         # encode an image to its content and style codes
-        style_fake = self.enc_style(images)
-        images = domain_code_split(images)
         content = self.enc_content(images)
+        # add domain code on image
+        dom_code = self.dom_code[dom_spc]
+        images = torch.cat((images,dom_code),1)
+        style_fake = self.enc_style(images)
         return content, style_fake
         
     def decode(self, content, style):
@@ -187,7 +191,7 @@ class Master_Gen(nn.Module):
     
     def forward(self, images):
         # reconstruct an image
-        content, style_fake = self.encode(images)
+        content, style_fake = self.encode(images,0)
         images_recon = self.decode(content, style_fake)
         return images_recon
 

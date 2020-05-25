@@ -386,10 +386,9 @@ def pytorch03_to_pytorch04(state_dict_base, trainer_name):
     return state_dict
 
 
-def domain_code_produce(hyperparameters,batch_size,spec_dom):
-    dom_code = torch.zeros(batch_size,hyperparameters['dom_num'],hyperparameters['new_size'],hyperparameters['new_size'])
-    dom_code[:,spec_dom,:,:] = torch.ones(1,hyperparameters['new_size'],hyperparameters['new_size'])
-
+def domain_code_produce( dom_num, batch_size, img_size, spec_dom):
+    dom_code = torch.zeros( batch_size, dom_num, img_size, img_size)
+    dom_code[:,spec_dom,:,:] = torch.ones(1,img_size,img_size)
     return dom_code.cuda()
 def domain_code_split(tensor):
     img = tensor[:,:3,:,:]
