@@ -558,26 +558,6 @@ class MASTER_Trainer_v2(nn.Module):
     ## edit
     def sample(self, x_a, x_b):
         self.eval()
-        # s_a1 = Variable(self.s_a)
-        # s_b1 = Variable(self.s_b)
-        # s_a2 = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
-        # s_b2 = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
-        # x_a_recon, x_b_recon, x_ba1, x_ba2, x_ab1, x_ab2 = [], [], [], [], [], []
-        # for i in range(x_a.size(0)):
-        #     c_a, s_a_fake = self.gen.encode(x_a[i].unsqueeze(0))
-        #     c_b, s_b_fake = self.gen.encode(x_b[i].unsqueeze(0))
-        #     x_a_recon.append(self.gen.decode(c_a, s_a_fake))
-        #     x_b_recon.append(self.gen.decode(c_b, s_b_fake))
-        #     x_ba1.append(self.gen.decode(c_b, s_a1[i].unsqueeze(0)))
-        #     x_ba2.append(self.gen.decode(c_b, s_a2[i].unsqueeze(0)))
-        #     x_ab1.append(self.gen.decode(c_a, s_b1[i].unsqueeze(0)))
-        #     x_ab2.append(self.gen.decode(c_a, s_b2[i].unsqueeze(0)))
-        # x_a_recon, x_b_recon = torch.cat(x_a_recon), torch.cat(x_b_recon)
-        # x_ba1, x_ba2 = torch.cat(x_ba1), torch.cat(x_ba2)
-        # x_ab1, x_ab2 = torch.cat(x_ab1), torch.cat(x_ab2)
-        # # return 
-        # x_a = domain_code_split(x_a)
-        # x_b = domain_code_split(x_b)
         x_a_recon, x_b_recon, x_ba1, x_ba2, x_ab1, x_ab2 = [], [], [], [], [], []
         
         x_a_perm = x_a[torch.randperm(x_a.size(0))]
@@ -585,15 +565,15 @@ class MASTER_Trainer_v2(nn.Module):
         
         c_a , s_a = self.gen.encode(x_a)
         c_b , s_b = self.gen.encode(x_b)
-        _ , s_a_pre = self.gen.encode(x_a_perm)
-        _ , s_b_pre = self.gen.encode(x_b_perm)
+        _ , s_a_perm = self.gen.encode(x_a_perm)
+        _ , s_b_perm = self.gen.encode(x_b_perm)
 
         x_a_recon = self.gen.decode(c_a,s_a)
         x_b_recon = self.gen.decode(c_b,s_b)
         x_ab1 = self.gen.decode(c_a,s_b)
         x_ba1 = self.gen.decode(c_b,s_a)
-        x_ab2 = self.gen.decode(c_a,s_b_pre)
-        x_ba2 = self.gen.decode(c_b,s_a_pre)
+        x_ab2 = self.gen.decode(c_a,s_b_perm)
+        x_ba2 = self.gen.decode(c_b,s_a_perm)
 
         # return 
         x_a = domain_code_split(x_a)
