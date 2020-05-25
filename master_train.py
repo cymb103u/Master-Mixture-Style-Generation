@@ -6,7 +6,7 @@ from utils import get_all_data_loaders, prepare_sub_folder, \
 write_html, write_loss, get_config, write_2images, Timer,domain_code_produce
 import argparse
 from torch.autograd import Variable
-from master_trainer import MASTER_Trainer,MUNIT_Trainer#, UNIT_Trainer
+from master_trainer import MASTER_Trainer,MASTER_Trainer_v2,MUNIT_Trainer #, UNIT_Trainer
 import torch.backends.cudnn as cudnn
 import torch
 try:
@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='configs/edges2handbags_folder.yaml', help='Path to the config file.')
 parser.add_argument('--output_path', type=str, default='.', help="outputs path")
 parser.add_argument("--resume", action="store_true")
-parser.add_argument('--trainer', type=str, default='MASTER', help="MASTER|MUNIT|UNIT")
+parser.add_argument('--trainer', type=str, default='MASTER_v2', help="MASTER|MUNIT|UNIT")
 opts = parser.parse_args()
 cudnn.benchmark = True
 
@@ -42,6 +42,8 @@ if opts.trainer == 'MUNIT':
 #     trainer = UNIT_Trainer(config)
 elif opts.trainer == 'MASTER':
     trainer =MASTER_Trainer(config)
+elif opts.trainer == 'MASTER_v2':
+    trainer = MASTER_Trainer_v2(config)
 else:
     sys.exit("Only support MASTER|MUNIT")
     
@@ -58,9 +60,9 @@ test_display_images_b = torch.stack([test_loader_b.dataset[i] for i in range(dis
 dom_zero = domain_code_produce(config,display_size,0).cuda()
 dom_one = domain_code_produce(config,display_size,1).cuda()
 train_display_images_a = torch.cat((train_display_images_a,dom_zero),dim=1)
-train_display_images_b = torch.cat((train_display_images_b,dom_zero),dim=1)
+train_display_images_b = torch.cat((train_display_images_b,dom_one),dim=1)
 test_display_images_a = torch.cat((test_display_images_a,dom_zero),dim=1)
-test_display_images_a = torch.cat((test_display_images_b,dom_zero),dim=1)
+test_display_images_b = torch.cat((test_display_images_b,dom_one),dim=1)
 
 # Setup logger and output folders
 model_name = os.path.splitext(os.path.basename(opts.config))[0]
@@ -75,7 +77,7 @@ iterations = trainer.resume(checkpoint_directory, hyperparameters=config) if opt
 # Domain code produce
 dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
 dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
-
+'''
 while True:
     for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
         trainer.update_learning_rate()
@@ -116,6 +118,7 @@ while True:
         iterations += 1
         if iterations >= max_iter:
             sys.exit('Finish training')
-
+'''
+image_outputs = trainer.sample(train_display_images_a, train_display_images_b)
 
 
