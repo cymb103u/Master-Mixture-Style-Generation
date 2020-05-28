@@ -414,8 +414,8 @@ def visualize_results_to_video(images_list,output_directory,fps=5):
 
 if __name__ == '__main__':
     import glob
-    in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder/images"
+    in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder2_v2/images"
     img_list = glob.glob(f"{in_pth}/gen_b2a_test_*")
-    out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder/"
+    out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder2_v2/"
     visualize_results_to_video(img_list,out_pth) 
     # print(type(img_list))
