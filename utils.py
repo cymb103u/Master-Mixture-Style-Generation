@@ -18,6 +18,7 @@ import yaml
 import numpy as np
 import torch.nn.init as init
 import time
+import cv2
 # Methods
 # get_all_data_loaders      : primary data loader interface (load trainA, testA, trainB, testB)
 # get_data_loader_list      : list-based data loader
@@ -393,3 +394,28 @@ def domain_code_produce( dom_num, batch_size, img_size, spec_dom):
 def domain_code_split(tensor):
     img = tensor[:,:3,:,:]
     return img
+
+def visualize_results_to_video(images_list,output_directory,fps=5):
+    vdo_name = images_list[0][-22:-13]
+    frame_array = []
+    #for sorting the file names properly
+    images_list.sort(key = lambda x: x[-12:-4])
+    for img_pth in images_list:
+        img = cv2.imread(img_pth)
+        height, width, layers = img.shape
+        size = (width,height)
+        #inserting the frames into an image array
+        frame_array.append(img)
+    out = cv2.VideoWriter(f'{output_directory}/{vdo_name}.avi',cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
+    for i in range(len(frame_array)):
+        # writing to a image array
+        out.write(frame_array[i])
+    out.release()
+
+if __name__ == '__main__':
+    import glob
+    in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder/images"
+    img_list = glob.glob(f"{in_pth}/gen_b2a_test_*")
+    out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder/"
+    visualize_results_to_video(img_list,out_pth) 
+    # print(type(img_list))
