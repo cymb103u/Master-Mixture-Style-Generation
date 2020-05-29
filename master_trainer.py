@@ -480,7 +480,7 @@ class MASTER_Trainer_v2(nn.Module):
         c_a_recon, s_b_recon = self.gen.encode(x_ab,1)
  
         # decode again (if needed)
-        # change 
+        # change self.gen input style code
         x_aba = self.gen.decode(c_a_recon, s_a_recon) if hyperparameters['recon_x_cyc_w'] > 0 else None
         x_bab = self.gen.decode(c_b_recon, s_b_recon) if hyperparameters['recon_x_cyc_w'] > 0 else None
 
