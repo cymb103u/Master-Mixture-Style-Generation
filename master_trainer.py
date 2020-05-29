@@ -480,8 +480,9 @@ class MASTER_Trainer_v2(nn.Module):
         c_a_recon, s_b_recon = self.gen.encode(x_ab,1)
  
         # decode again (if needed)
-        x_aba = self.gen.decode(c_a_recon, s_a_prime) if hyperparameters['recon_x_cyc_w'] > 0 else None
-        x_bab = self.gen.decode(c_b_recon, s_b_prime) if hyperparameters['recon_x_cyc_w'] > 0 else None
+        # change 
+        x_aba = self.gen.decode(c_a_recon, s_a_recon) if hyperparameters['recon_x_cyc_w'] > 0 else None
+        x_bab = self.gen.decode(c_b_recon, s_b_recon) if hyperparameters['recon_x_cyc_w'] > 0 else None
 
         # reconstruction loss
         self.loss_gen_recon_x_a = self.recon_criterion(x_a_recon, x_a)
