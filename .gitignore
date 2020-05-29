@@ -17,5 +17,5 @@ __pycache__/
 .vscode/
 datasets/*
 models/*
-log.txt
+*log.txt
 *.out

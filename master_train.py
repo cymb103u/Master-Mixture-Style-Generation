@@ -23,10 +23,11 @@ parser.add_argument('--config', type=str, default='configs/edges2handbags_folder
 parser.add_argument('--output_path', type=str, default='.', help="outputs path")
 parser.add_argument("--resume", action="store_true")
 parser.add_argument('--trainer', type=str, default='MASTER_v2', help="MASTER|MUNIT|UNIT")
+parser.add_argument('--gpu', type=int , default='0')
 opts = parser.parse_args()
 cudnn.benchmark = True
 
-GPU = 6
+GPU = opts.gpu
 torch.cuda.set_device(GPU)
 
 # Load experiment setting

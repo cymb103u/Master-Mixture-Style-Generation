@@ -276,9 +276,9 @@ class MASTER_Trainer(nn.Module):
         # decode (cross domain)
         x_ba = self.gen.decode(c_b, s_a)
         x_ab = self.gen.decode(c_a, s_b)
-        # add domain code
-        x_ba =torch.cat((x_ba,domain_code_produce(hyperparameters,hyperparameters['batch_size'],0)),1)
-        x_ab =torch.cat((x_ab,domain_code_produce(hyperparameters,hyperparameters['batch_size'],1)),1)
+        # # add domain code
+        # x_ba =torch.cat((x_ba,domain_code_produce(hyperparameters,hyperparameters['batch_size'],0)),1)
+        # x_ab =torch.cat((x_ab,domain_code_produce(hyperparameters,hyperparameters['batch_size'],1)),1)
         # encode again
         c_b_recon, s_a_recon = self.gen.encode(x_ba,0)
         c_a_recon, s_b_recon = self.gen.encode(x_ab,1)
@@ -363,9 +363,9 @@ class MASTER_Trainer(nn.Module):
         x_a_recon, x_b_recon = torch.cat(x_a_recon), torch.cat(x_b_recon)
         x_ba1, x_ba2 = torch.cat(x_ba1), torch.cat(x_ba2)
         x_ab1, x_ab2 = torch.cat(x_ab1), torch.cat(x_ab2)
-        # return 
-        x_a = domain_code_split(x_a)
-        x_b = domain_code_split(x_b)
+        # # return 
+        # x_a = domain_code_split(x_a)
+        # x_b = domain_code_split(x_b)
         self.train()
         return x_a, x_a_recon, x_ab1, x_ab2, x_b, x_b_recon, x_ba1, x_ba2
     
