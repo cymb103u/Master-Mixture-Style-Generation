@@ -8,6 +8,7 @@ from networks import Vgg16
 from torch.autograd import Variable
 from torch.optim import lr_scheduler
 from torchvision import transforms
+from torch.distributions.beta import Beta
 from data import ImageFilelist, ImageFolder
 import torch
 import torch.nn as nn
@@ -395,27 +396,38 @@ def domain_code_split(tensor):
     img = tensor[:,:3,:,:]
     return img
 
-def visualize_results_to_video(images_list,output_directory,fps=5):
-    vdo_name = images_list[0][-22:-13]
-    frame_array = []
-    #for sorting the file names properly
-    images_list.sort(key = lambda x: x[-12:-4])
-    for img_pth in images_list:
-        img = cv2.imread(img_pth)
-        height, width, layers = img.shape
-        size = (width,height)
-        #inserting the frames into an image array
-        frame_array.append(img)
-    out = cv2.VideoWriter(f'{output_directory}/{vdo_name}.avi',cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
-    for i in range(len(frame_array)):
-        # writing to a image array
-        out.write(frame_array[i])
-    out.release()
+def visualize_results_to_video(input_directory,output_directory,fps=5):
+    case =['a2b_train','a2b_test','b2a_train','b2a_test']
+    for vdo_name in case:
+        images_list = glob.glob(f'{input_directory}/*{vdo_name}*')
+        # vdo_name = images_list[0][-22:-13]
+        frame_array = []
+        #for sorting the file names properly
+        images_list.sort(key = lambda x: x[-12:-4])
+        for img_pth in images_list:
+            img = cv2.imread(img_pth)
+            height, width, layers = img.shape
+            size = (width,height)
+            #inserting the frames into an image array
+            frame_array.append(img)
+        out = cv2.VideoWriter(f'{output_directory}/{vdo_name}.avi',cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
+        for i in range(len(frame_array)):
+            # writing to a image array
+            out.write(frame_array[i])
+        out.release()
+
+def get_domainess(cur_iter, total_iter, batch):
+    alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
+    distribution = Beta(alpha, 1)
+    return distribution.sample((batch, 1)).cuda()
 
 if __name__ == '__main__':
     import glob
-    in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder2_v2/images"
-    img_list = glob.glob(f"{in_pth}/gen_b2a_test_*")
-    out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder2_v2/"
-    visualize_results_to_video(img_list,out_pth) 
+    in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v3/images"
+    out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v3/"
+    visualize_results_to_video(in_pth,out_pth) 
     # print(type(img_list))
+    # total_iter = 100000
+    # for current_iter in range(total_iter):
+    #     domain = get_domainess(current_iter,total_iter,2)
+    #     print (domain)

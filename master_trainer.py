@@ -334,7 +334,7 @@ class MASTER_Trainer(nn.Module):
         self.loss_dis_total.backward()
         self.dis_opt.step()
 
-    def flow_gen_update(self,x_a, x_b, hyperparameters):
+    def flow_gen_update(self,x_a, x_b,z_style,hyperparameters):
         self.gen_opt.zero_grad()
         s_a = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
         s_b = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
@@ -361,7 +361,7 @@ class MASTER_Trainer(nn.Module):
         self.loss_gen_total.backward()
         self.gen_opt.step()
 
-    def flow_dis_update(self,x_a, x_b, hyperparameters):
+    def flow_dis_update(self,x_a, x_b,z_style,hyperparameters):
         self.dis_opt.zero_grad()
         s_a = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
         s_b = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())

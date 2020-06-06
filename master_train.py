@@ -78,7 +78,7 @@ iterations = trainer.resume(checkpoint_directory, hyperparameters=config) if opt
 # # Domain code produce
 # dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
 # dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
-
+z_style = 0
 while True:
     for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
         images_a, images_b = images_a.cuda().detach(), images_b.cuda().detach()
@@ -89,6 +89,11 @@ while True:
             trainer.gen_update(images_a, images_b, config)
             torch.cuda.synchronize()
         trainer.update_learning_rate()
+        if 0 :
+            trainer.flow_dis_update(images_a, images_b,z_style,config)
+            trainer.flow_gen_update(images_a, images_b,z_style, config)
+            torch.cuda.synchronize()
+        # trainer.update_learning_rate()
 
         # Dump training stats in log file
         if (iterations + 1) % config['log_iter'] == 0:
