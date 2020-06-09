@@ -12,5 +12,8 @@
   * model = MASTER_v2 + cycle  loss 
 * style_shoes_label_folder_v4 [112]: add flowing on one generator with randn noise
   * model = MASTER + flowing
-### commmand 
+* style_shoes_label_folder_v5 : 
+  * model = MASTER_v2 + flowing
+## commmand 
+
 - nohup python master_train.py --config configs/style_shoes_label_folder_v2.yaml --trainer MASTER_v2 --gpu 0 &> v2_log.txt &
