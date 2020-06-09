@@ -3,7 +3,8 @@ Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 """
 from utils import get_all_data_loaders, prepare_sub_folder, \
-write_html, write_loss, get_config, write_2images, Timer,domain_code_produce
+    write_html, write_loss, get_config, write_2images, Timer,\
+        domain_code_produce, get_domainess
 import argparse
 from torch.autograd import Variable
 from master_trainer import MASTER_Trainer,MASTER_Trainer_v2,MUNIT_Trainer #, UNIT_Trainer
@@ -22,7 +23,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='configs/edges2handbags_folder.yaml', help='Path to the config file.')
 parser.add_argument('--output_path', type=str, default='.', help="outputs path")
 parser.add_argument("--resume", action="store_true")
-parser.add_argument('--trainer', type=str, default='MASTER_v2', help="MASTER|MUNIT|UNIT")
+parser.add_argument('--trainer', type=str, default='MASTER', help="MASTER|MUNIT|UNIT")
 parser.add_argument('--gpu', type=int , default='0')
 opts = parser.parse_args()
 cudnn.benchmark = True
@@ -78,22 +79,19 @@ iterations = trainer.resume(checkpoint_directory, hyperparameters=config) if opt
 # # Domain code produce
 # dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
 # dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
-z_style = 0
+
 while True:
     for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
         images_a, images_b = images_a.cuda().detach(), images_b.cuda().detach()
-
+        z_style = get_domainess(iterations,max_iter,config['batch_size'])
         with Timer("Elapsed time in update: %f"):
             # Main training code
             trainer.dis_update(images_a, images_b, config)
             trainer.gen_update(images_a, images_b, config)
+            trainer.flow_dis_update(images_a, images_b, z_style, config)
+            trainer.flow_gen_update(images_a, images_b, z_style, config)
             torch.cuda.synchronize()
         trainer.update_learning_rate()
-        if 0 :
-            trainer.flow_dis_update(images_a, images_b,z_style,config)
-            trainer.flow_gen_update(images_a, images_b,z_style, config)
-            torch.cuda.synchronize()
-        # trainer.update_learning_rate()
 
         # Dump training stats in log file
         if (iterations + 1) % config['log_iter'] == 0:

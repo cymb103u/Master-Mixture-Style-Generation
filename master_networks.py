@@ -161,7 +161,7 @@ class Master_Gen(nn.Module):
         pad_type = params['pad_type']
         mlp_dim = params['mlp_dim']
         dom_num = params['dom_num']
-        self.dom_code = [domain_code_produce(dom_num,1,256,i) for i in range(dom_num)]
+        self.dom_code = domain_code_produce(1, 256, dom_num)
         
         # style encoder
         self.enc_style = StyleEncoder(4, input_dim+dom_num, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)

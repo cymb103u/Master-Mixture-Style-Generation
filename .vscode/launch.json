@@ -1,0 +1,47 @@
+{
+    // 使用 IntelliSense 以得知可用的屬性。
+    // 暫留以檢視現有屬性的描述。
+    // 如需詳細資訊，請瀏覽: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "name": "train_v3.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args":[
+                "--config","configs/style_shoes_label_folder_v3.yaml"
+
+            ]
+        },
+        {
+            "name": "train_v4.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args":[
+                "--config","configs/style_shoes_label_folder_v4.yaml",
+                "--trainer","MASTER"
+            ]
+        },
+        {
+            "name": "Python: test.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args":[
+                "--config","configs/edges2shoes_folder.yaml",
+                "--input","inputs/edges2shoes_edge.jpg",
+                "--output_folder","outputs",
+                "--checkpoint","models/edges2shoes.pt",
+                "--a2b","1",
+                "--style","datasets/CRAWL_ALL/1BM00261_920_P1.jpg"
+
+            ]
+        },
+    ]
+}

@@ -387,11 +387,18 @@ def pytorch03_to_pytorch04(state_dict_base, trainer_name):
     state_dict['b'] = __conversion_core(state_dict_base['b'], trainer_name)
     return state_dict
 
+# for example  domain=2
+# dimension (batch_size, dom_num, img_size, img_size)
+# output data will be  [all_1, 0 is 1 , 1 is 1] 
+def domain_code_produce(batch_size, img_size, dom_num):
+    dom_codes = [torch.ones(batch_size,dom_num,img_size,img_size).cuda()]
+    for i in range(dom_num):
+        dom_code = torch.zeros( batch_size, dom_num, img_size, img_size)
+        dom_code[:,i,:,:] = torch.ones(1,img_size,img_size)
+        dom_codes.append(dom_code.cuda())
+    # dom_codes =torch.cat(dom_codes)
+    return dom_codes
 
-def domain_code_produce( dom_num, batch_size, img_size, spec_dom):
-    dom_code = torch.zeros( batch_size, dom_num, img_size, img_size)
-    dom_code[:,spec_dom,:,:] = torch.ones(1,img_size,img_size)
-    return dom_code.cuda()
 def domain_code_split(tensor):
     img = tensor[:,:3,:,:]
     return img
@@ -406,7 +413,7 @@ def visualize_results_to_video(input_directory,output_directory,fps=5):
         images_list.sort(key = lambda x: x[-12:-4])
         for img_pth in images_list:
             img = cv2.imread(img_pth)
-            height, width, layers = img.shape
+            height, width, channels = img.shape
             size = (width,height)
             #inserting the frames into an image array
             frame_array.append(img)

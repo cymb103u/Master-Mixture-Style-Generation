@@ -14,7 +14,7 @@ src/yaml_generator.py
 *.zip
 *.pkl
 __pycache__/
-.vscode/
+.vscode/settings.json
 datasets/*
 models/*
 *log.txt
