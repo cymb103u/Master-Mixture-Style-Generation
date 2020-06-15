@@ -2,7 +2,7 @@
 Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 """
-from utils import get_config,domain_code_split,domain_code_produce
+from utils import get_config,domain_code_produce_encoder,domain_code_produce_decoder
 import argparse
 from torch import nn
 from torch.autograd import Variable
@@ -161,8 +161,8 @@ class Master_Gen(nn.Module):
         pad_type = params['pad_type']
         mlp_dim = params['mlp_dim']
         dom_num = params['dom_num']
-        self.dom_code = domain_code_produce(1, 256, dom_num)
-        
+        self.dom_code_encode = domain_code_produce_encoder(1, 256, dom_num)
+        self.dom_code_decode = domain_code_produce_decoder(1, dom_num)
         # style encoder
         self.enc_style = StyleEncoder(4, input_dim+dom_num, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)
 
@@ -171,20 +171,28 @@ class Master_Gen(nn.Module):
         self.dec = Decoder(n_downsample, n_res, self.enc_content.output_dim, input_dim, res_norm='adain', activ=activ, pad_type=pad_type)
 
         # MLP to generate AdaIN parameters
-        self.mlp = MLP(style_dim, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
+        self.mlp = MLP(style_dim + dom_num, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
 
     def encode(self, images,dom_spc):
         # encode an image to its content and style codes
         content = self.enc_content(images)
         # add domain code on image
-        dom_code = self.dom_code[dom_spc]
+        dom_code = self.dom_code_encode[dom_spc]
         images = torch.cat((images,dom_code),1)
         style_fake = self.enc_style(images)
+
         return content, style_fake
         
-    def decode(self, content, style):
+    def decode(self, content, style, dom_spc):
         # decode content and style codes to an image
-        adain_params = self.mlp(style)
+        """
+        Paper Step:
+            先將style code 經過 MLP(multi-layer perceptron block),
+            將出來的 feature 當作 AdaIN Parameters, 餵入Residaul block
+        """
+        # add domain information when decoding
+        tensor = torch.cat([style,self.dom_code_decode[dom_spc]],dim=1)
+        adain_params = self.mlp(tensor)
         self.assign_adain_params(adain_params, self.dec)
         images = self.dec(content)
         return images

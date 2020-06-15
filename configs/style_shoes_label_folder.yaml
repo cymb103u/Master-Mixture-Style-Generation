@@ -47,9 +47,9 @@ dis:
 
 # data options
 ## data present (batch_zise,channel,h,w)
-input_dim: 3 # input
-dom_num: 2 # domains number
-num_workers: 12                              # number of data loading threads
+input_dim: 3                                # input
+dom_num: 2                                  # domains number
+num_workers: 12                             # number of data loading threads
 new_size: 256                               # first resize the shortest image side to this size
 crop_image_height: 256                      # random crop image of this height
 crop_image_width: 256                       # random crop image of this width

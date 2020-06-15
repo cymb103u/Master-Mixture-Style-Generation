@@ -4,6 +4,7 @@
     // 如需詳細資訊，請瀏覽: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         
         {
             "name": "train_v3.py",
@@ -17,14 +18,15 @@
             ]
         },
         {
-            "name": "train_v4.py",
+            "name": "train_v5.py",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "args":[
                 "--config","configs/style_shoes_label_folder_v5.yaml",
-                "--trainer","MASTER"
+                "--trainer","MASTER",
+                "--gpu","1"
             ]
         },
         {

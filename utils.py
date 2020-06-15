@@ -400,18 +400,23 @@ def pytorch03_to_pytorch04(state_dict_base, trainer_name):
 # for example  domain=2
 # dimension (batch_size, dom_num, img_size, img_size)
 # output data will be  [all_1, 0 is 1 , 1 is 1] 
-def domain_code_produce(batch_size, img_size, dom_num):
+def domain_code_produce_encoder(batch_size, img_size, dom_num):
+    # domain num : the number of domain
+    # 0 : for mixer domain 
     dom_codes = [torch.ones(batch_size,dom_num,img_size,img_size).cuda()]
     for i in range(dom_num):
         dom_code = torch.zeros( batch_size, dom_num, img_size, img_size)
         dom_code[:,i,:,:] = torch.ones(1,img_size,img_size)
         dom_codes.append(dom_code.cuda())
-    # dom_codes =torch.cat(dom_codes)
     return dom_codes
 
-def domain_code_split(tensor):
-    img = tensor[:,:3,:,:]
-    return img
+def domain_code_produce_decoder(batch_size,dom_num):
+    dom_codes =[torch.ones(batch_size,dom_num,1,1).cuda()] 
+    for i in range(dom_num):
+        dom_code = torch.zeros(batch_size,dom_num,1,1)
+        dom_code[:,i,:,:] =torch.ones(1)
+        dom_codes.append(dom_code.cuda())
+    return dom_codes
 
 def visualize_results_to_video(input_directory,output_directory,fps=5):
     case =['a2b_train','a2b_test','b2a_train','b2a_test']

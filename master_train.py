@@ -4,7 +4,8 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 """
 from utils import get_all_data_loaders, prepare_sub_folder, \
     write_html, write_loss, get_config, write_2images, Timer,\
-        domain_code_produce, get_domainess
+        domain_code_produce_encoder,domain_code_produce_decoder\
+            , get_domainess
 import argparse
 from torch.autograd import Variable
 from master_trainer import MASTER_Trainer,MASTER_Trainer_v2,MUNIT_Trainer #, UNIT_Trainer

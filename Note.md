@@ -14,6 +14,8 @@
   * model = MASTER + flowing
 * style_shoes_label_folder_v5 : 
   * model = MASTER_v2 + flowing
+* style_shoes_label_folder_v6 : 在decode的時候加入domain資訊
+  * model = MASTER + flowing
 ## commmand 
 
 - nohup python master_train.py --config configs/style_shoes_label_folder_v2.yaml --trainer MASTER_v2 --gpu 0 &> v2_log.txt &
