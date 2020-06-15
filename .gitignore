@@ -19,3 +19,4 @@ datasets/*
 models/*
 *log.txt
 *.out
+*.jpg

@@ -58,13 +58,6 @@ train_display_images_b = torch.stack([train_loader_b.dataset[i] for i in range(d
 test_display_images_a = torch.stack([test_loader_a.dataset[i] for i in range(display_size)]).cuda()
 test_display_images_b = torch.stack([test_loader_b.dataset[i] for i in range(display_size)]).cuda()
 
-# # add domain code
-# dom_zero = domain_code_produce(config,display_size,0).cuda()
-# dom_one = domain_code_produce(config,display_size,1).cuda()
-# train_display_images_a = torch.cat((train_display_images_a,dom_zero),dim=1)
-# train_display_images_b = torch.cat((train_display_images_b,dom_one),dim=1)
-# test_display_images_a = torch.cat((test_display_images_a,dom_zero),dim=1)
-# test_display_images_b = torch.cat((test_display_images_b,dom_one),dim=1)
 
 # Setup logger and output folders
 model_name = os.path.splitext(os.path.basename(opts.config))[0]

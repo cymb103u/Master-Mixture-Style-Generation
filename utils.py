@@ -20,6 +20,12 @@ import numpy as np
 import torch.nn.init as init
 import time
 import cv2
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy import stats
+from scipy.stats import beta
+
 # Methods
 # get_all_data_loaders      : primary data loader interface (load trainA, testA, trainB, testB)
 # get_data_loader_list      : list-based data loader
@@ -133,6 +139,10 @@ def prepare_sub_folder(output_directory):
     if not os.path.exists(checkpoint_directory):
         print("Creating directory: {}".format(checkpoint_directory))
         os.makedirs(checkpoint_directory)
+    test_directory = os.path.join(output_directory, 'test')
+    if not os.path.exists(checkpoint_directory):
+        print("Creating directory: {}".format(test_directory))
+        os.makedirs(test_directory)
     return checkpoint_directory, image_directory
 
 
@@ -428,13 +438,32 @@ def get_domainess(cur_iter, total_iter, batch):
     distribution = Beta(alpha, 1)
     return distribution.sample((batch, 1)).cuda()
 
+def get_domainess_pdf(cur_iter, total_iter,sample_num=10000):
+    alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
+    x = np.linspace(beta.ppf(0.0001, alpha, 1),beta.ppf(0.9999, alpha, 1), sample_num)
+    density = beta.pdf(x,alpha , 1)
+    return alpha,x ,density
+
 if __name__ == '__main__':
     import glob
-    in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v3/images"
-    out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v3/"
-    visualize_results_to_video(in_pth,out_pth) 
+    # in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v3/images"
+    # out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v3/"
+    # visualize_results_to_video(in_pth,out_pth) 
     # print(type(img_list))
-    # total_iter = 100000
-    # for current_iter in range(total_iter):
-    #     domain = get_domainess(current_iter,total_iter,2)
-    #     print (domain)
+
+    # visualize distribution
+    total_iter = 100000
+    sample_iter = np.linspace(0,total_iter,500,dtype=np.int)
+    for current_iter in sample_iter:
+        alpha, x, density = get_domainess_pdf(current_iter,total_iter)
+        # figure set
+        plt.grid()
+        plt.title(f'Be({alpha:.4f},1),current={current_iter:07d}')
+        plt.xlabel('x')
+        plt.ylabel('Density')
+        ## control x axe and y axe range
+        plt.xlim(0, 1) 
+        plt.ylim(0,8)
+        plt.plot(x, density,'r-', linewidth=1, alpha=0.6, label='beta pdf')
+        plt.savefig(f'beta_distribution_figures/plt_{current_iter:07d}iter.jpg')
+        plt.clf()     

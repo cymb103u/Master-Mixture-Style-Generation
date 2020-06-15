@@ -23,24 +23,32 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args":[
-                "--config","configs/style_shoes_label_folder_v4.yaml",
+                "--config","configs/style_shoes_label_folder_v5.yaml",
                 "--trainer","MASTER"
             ]
         },
         {
-            "name": "Python: test.py",
+            "name": "Python: test_v4.py",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "args":[
-                "--config","configs/edges2shoes_folder.yaml",
-                "--input","inputs/edges2shoes_edge.jpg",
-                "--output_folder","outputs",
-                "--checkpoint","models/edges2shoes.pt",
-                "--a2b","1",
-                "--style","datasets/CRAWL_ALL/1BM00261_920_P1.jpg"
-
+                "--trainer", "MASTER",
+                "--config", "configs/style_shoes_label_folder_v4.yaml",
+                "--checkpoint", "outputs/style_shoes_label_folder_v4/checkpoints/gen_00575000.pt"
+                    ]
+        },
+        {
+            "name": "Python: test_v5.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args":[
+                "--trainer", "MASTER_v2",
+                "--config", "configs/style_shoes_label_folder_v5.yaml",
+                "--checkpoint", "outputs/style_shoes_label_folder_v5/checkpoints/gen_00275000.pt"
             ]
         },
     ]
