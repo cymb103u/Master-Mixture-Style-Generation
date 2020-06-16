@@ -5,16 +5,17 @@
     "version": "0.2.0",
     "configurations": [
 
-        
+
         {
-            "name": "train_v3.py",
+            "name": "train_v4.py",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "args":[
-                "--config","configs/style_shoes_label_folder_v3.yaml"
-
+                "--config","configs/style_shoes_label_folder_v4.yaml",
+                "--trainer","MASTER",
+                "--gpu","1"
             ]
         },
         {
@@ -51,6 +52,18 @@
                 "--trainer", "MASTER_v2",
                 "--config", "configs/style_shoes_label_folder_v5.yaml",
                 "--checkpoint", "outputs/style_shoes_label_folder_v5/checkpoints/gen_00275000.pt"
+            ]
+        },
+        {
+            "name": "Python: test_v6.py",
+            "type": "python",
+            "request": "launch",
+            "program": "master_test.py",
+            "console": "integratedTerminal",
+            "args":[
+                "--trainer", "MASTER",
+                "--config", "configs/style_shoes_label_folder_v6.yaml",
+                "--checkpoint", "outputs/style_shoes_label_folder_v6/checkpoints/gen_00125000.pt"
             ]
         },
     ]

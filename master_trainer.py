@@ -414,11 +414,34 @@ class MASTER_Trainer(nn.Module):
         x_a_recon, x_b_recon = torch.cat(x_a_recon), torch.cat(x_b_recon)
         x_ba1, x_ba2 = torch.cat(x_ba1), torch.cat(x_ba2)
         x_ab1, x_ab2 = torch.cat(x_ab1), torch.cat(x_ab2)
-        # # return 
-        # x_a = domain_code_split(x_a)
-        # x_b = domain_code_split(x_b)
+
         self.train()
         return x_a, x_a_recon, x_ab1, x_ab2, x_b, x_b_recon, x_ba1, x_ba2
+    
+    def interpolation_sample(self,x_a, x_b):
+        self.eval()
+        s_a1 = Variable(self.s_a)
+        s_b1 = Variable(self.s_b)
+        s_a2 = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
+        s_b2 = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
+        c_a_fix, c_a_rand,c_b_fix,c_b_rand = [], [], [], []
+        z_style_params = [0,0.2,0.4,0.6,0.8,1]
+        rand_num = torch.randint(0,x_a.size(0),(1,))
+        c_a, s_a_fake = self.gen.encode(x_a[rand_num].unsqueeze(0),1)
+        c_b, s_b_fake = self.gen.encode(x_b[rand_num].unsqueeze(0),2)
+        for z in z_style_params:
+            # fixed style code
+            s_interp1 = (1-z)*s_a1 + z*s_b1
+            # random style code
+            s_interp2 = (1-z)*s_a2[rand_num] + z*s_b2[rand_num]
+            c_a_fix.append(self.gen.decode(c_a,s_interp1,0))
+            c_b_fix.append(self.gen.decode(c_b,s_interp1,0))
+            c_a_rand.append(self.gen.decode(c_a,s_interp2,0))
+            c_b_rand.append(self.gen.decode(c_b,s_interp2,0))
+        c_a_fix, c_a_rand = torch.cat(c_a_fix), torch.cat(c_a_rand)
+        c_b_fix, c_b_rand = torch.cat(c_b_fix), torch.cat(c_b_rand)
+        self.train()
+        return   c_a_fix, c_a_rand,c_b_fix, c_b_rand
     
     def resume(self, checkpoint_dir, hyperparameters):
         # Load generators
@@ -649,16 +672,16 @@ class MASTER_Trainer_v2(nn.Module):
         x_a_perm = x_a[torch.randperm(x_a.size(0))]
         x_b_perm = x_b[torch.randperm(x_b.size(0))]
         for i in range(x_a.size(0)):
-            c_a , s_a = self.gen.encode(x_a[i].unsqueeze(0),0)
-            c_b , s_b = self.gen.encode(x_b[i].unsqueeze(0),1)
-            _ , s_a_perm = self.gen.encode(x_a_perm[i].unsqueeze(0),0)
-            _ , s_b_perm = self.gen.encode(x_b_perm[i].unsqueeze(0),1)
-            x_a_recon.append(self.gen.decode(c_a,s_a))
-            x_b_recon.append(self.gen.decode(c_b,s_b))
-            x_ab1.append(self.gen.decode(c_a,s_b))
-            x_ba1.append(self.gen.decode(c_b,s_a))
-            x_ab2.append(self.gen.decode(c_a,s_b_perm))
-            x_ba2.append(self.gen.decode(c_b,s_a_perm))
+            c_a , s_a = self.gen.encode(x_a[i].unsqueeze(0),1)
+            c_b , s_b = self.gen.encode(x_b[i].unsqueeze(0),2)
+            _ , s_a_perm = self.gen.encode(x_a_perm[i].unsqueeze(0),1)
+            _ , s_b_perm = self.gen.encode(x_b_perm[i].unsqueeze(0),2)
+            x_a_recon.append(self.gen.decode(c_a,s_a, 1))
+            x_b_recon.append(self.gen.decode(c_b,s_b, 2))
+            x_ab1.append(self.gen.decode(c_a,s_b, 2))
+            x_ba1.append(self.gen.decode(c_b,s_a, 1))
+            x_ab2.append(self.gen.decode(c_a,s_b_perm, 2))
+            x_ba2.append(self.gen.decode(c_b,s_a_perm, 1))
         x_a_recon, x_b_recon = torch.cat(x_a_recon), torch.cat(x_b_recon)
         x_ba1, x_ba2 = torch.cat(x_ba1), torch.cat(x_ba2)
         x_ab1, x_ab2 = torch.cat(x_ab1), torch.cat(x_ab2)
@@ -695,5 +718,7 @@ class MASTER_Trainer_v2(nn.Module):
         torch.save({'a': self.dis_a.state_dict(), 'b': self.dis_b.state_dict()}, dis_name)
         torch.save({'gen': self.gen_opt.state_dict(), 'dis': self.dis_opt.state_dict()}, opt_name)
 
-if __name__=='__main__':
-    print(0)
+if __name__== '__main__':
+    # num = torch.LongTensor(1).random_(0, 10)
+    num = torch.randint(0,10, (3,))
+    print(num)

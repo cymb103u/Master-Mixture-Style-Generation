@@ -140,7 +140,7 @@ def prepare_sub_folder(output_directory):
         print("Creating directory: {}".format(checkpoint_directory))
         os.makedirs(checkpoint_directory)
     test_directory = os.path.join(output_directory, 'test')
-    if not os.path.exists(checkpoint_directory):
+    if not os.path.exists(test_directory):
         print("Creating directory: {}".format(test_directory))
         os.makedirs(test_directory)
     return checkpoint_directory, image_directory

@@ -19,13 +19,14 @@ import os
 import sys
 import tensorboardX
 import shutil
-
+import visualize
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='configs/edges2handbags_folder.yaml', help='Path to the config file.')
 parser.add_argument('--output_path', type=str, default='.', help="outputs path")
-parser.add_argument("--resume", action="store_true")
+parser.add_argument('--resume', action="store_true")
 parser.add_argument('--trainer', type=str, default='MASTER', help="MASTER|MUNIT|UNIT")
 parser.add_argument('--gpu', type=int , default='0')
+parser.add_argument('--vis_screen',type=str, default='gan')
 opts = parser.parse_args()
 cudnn.benchmark = True
 
@@ -73,7 +74,7 @@ iterations = trainer.resume(checkpoint_directory, hyperparameters=config) if opt
 # # Domain code produce
 # dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
 # dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
-
+logger = visualize.Logger(opts.vis_screen)
 while True:
     for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
         images_a, images_b = images_a.cuda().detach(), images_b.cuda().detach()
@@ -105,7 +106,8 @@ while True:
         if (iterations + 1) % config['image_display_iter'] == 0:
             with torch.no_grad():
                 image_outputs = trainer.sample(train_display_images_a, train_display_images_b)
-            write_2images(image_outputs, display_size, image_directory, 'train_current')
+            logger.draw_rand(image_outputs, display_size)
+            # write_2images(image_outputs, display_size, image_directory, 'train_current')
 
         # Save network weights
         if (iterations + 1) % config['snapshot_save_iter'] == 0:

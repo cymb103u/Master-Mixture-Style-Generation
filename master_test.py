@@ -70,21 +70,25 @@ with torch.no_grad():
     for i,(img_a,img_b) in enumerate(zip(test_loader_a,test_loader_b)):
         content_a, style_a = encode(img_a.cuda(), 1)
         content_b, style_b = encode(img_b.cuda(), 2)
-        img_b2a = decode(content_b,style_a)
-        img_a2b = decode(content_a,style_b)
+        img_b2a = decode(content_b,style_a,1)
+        img_a2b = decode(content_a,style_b,2)
         all_img = torch.cat([img_a.cuda(),img_b.cuda(),img_b2a,img_a2b])
         for z in z_style_params:
             z_interp = (1-z)*style_a+z*style_b
             z_style.append(z_interp)
-            content_a_interp.append(decode(content_a,z_interp))
-            content_b_interp.append(decode(content_b,z_interp))
+            if z==0 or z==1:
+                content_a_interp.append(decode(content_a,z_interp,z+1))
+                content_b_interp.append(decode(content_b,z_interp,z+1))
+            else:
+                content_a_interp.append(decode(content_a,z_interp,0))
+                content_b_interp.append(decode(content_b,z_interp,0))
         # print(z_style)
         content_a_interp =torch.cat(content_a_interp)
         content_b_interp =torch.cat(content_b_interp)
 
-        vutils.save_image(all_img,f'outputs/{model_name}/test/disentangle_{i:03d}.jpg',nrow=1)
-        vutils.save_image(content_a_interp,f'outputs/{model_name}/test/content_a_interp_{i:03d}.jpg')
-        vutils.save_image(content_b_interp,f'outputs/{model_name}/test/content_b_interp_{i:03d}.jpg')
+        vutils.save_image(all_img,f'outputs/{model_name}/test/disentangle_{i:03d}.jpg',nrow=1,normalize=True)
+        vutils.save_image(content_a_interp,f'outputs/{model_name}/test/content_a_interp_{i:03d}.jpg',normalize=True)
+        vutils.save_image(content_b_interp,f'outputs/{model_name}/test/content_b_interp_{i:03d}.jpg',normalize=True)
         content_a_interp = []
         content_b_interp = []
 

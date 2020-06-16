@@ -1,7 +1,7 @@
 from visdom import Visdom
 import numpy as np
-
-
+import torchvision.utils as vutils
+import torch
 class VisdomPlotter(object):
 
     """Plots to Visdom"""
@@ -22,11 +22,14 @@ class VisdomPlotter(object):
         else:
             self.viz.line(X=np.array([x]), Y=np.array([y]), env=self.env, win=self.plots[var_name], name=split_name)
 
-    def draw(self, var_name, images):
+    def draw(self, var_name, images,display_image_num):
         if var_name not in self.plots:
-            self.plots[var_name] = self.viz.images(images, env=self.env)
+            self.plots[var_name] = self.viz.images(images,nrow=display_image_num, padding=0,\
+                env=self.env, opts=dict(title=f'{var_name}', caption=f'{var_name}'))
         else:
-            self.viz.images(images, env=self.env, win=self.plots[var_name])
+            self.viz.images(images,nrow=display_image_num,padding=0,\
+                 env=self.env, win=self.plots[var_name],opts=dict(title=f'{var_name}', caption=f'{var_name}'))
+
 
 class Logger(object):
     def __init__(self, vis_screen):
@@ -67,12 +70,24 @@ class Logger(object):
         self.hist_Dx = []
         self.hist_DGx = []
 
-    def draw(self, right_images, fake_images):
-        self.viz.draw('generated images', fake_images.data.cpu().numpy()[:64] * 128 + 128)
-        self.viz.draw('real images', right_images.data.cpu().numpy()[:64] * 128 + 128)
+    def draw_rand(self,train_sample,display_image_num):
+        """
+        train_sample : x_a, x_a_recon, x_ab1, x_ab2, x_b, x_b_recon, x_ba1, x_ba2
+                        0     1          2       3    4      5         6      7 
+        """
+        # x_a, x_b,x_ba1(fix), x_ba2(rand)
+        a_style_b_content = torch.cat((train_sample[0],train_sample[4],train_sample[6],train_sample[7]),0)
+        a_style_b_content = vutils.make_grid(a_style_b_content.data, nrow=display_image_num, padding=0, normalize=True)
+        # Add 0.5 after unnormalizing to [0, 255] to round to nearest integer
+        # a_style_b_content = a_style_b_content.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
+        
+        # x_b, x_a,x_ab1(fix), x_ab2(rand)
+        b_style_a_content = torch.cat([train_sample[4],train_sample[0],train_sample[2],train_sample[3]],0)
+        b_style_a_content = vutils.make_grid(b_style_a_content.data, nrow=display_image_num, padding=0, normalize=True)
+        # b_style_a_content = b_style_a_content.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
+        
+        self.viz.draw('a_style_b_content', a_style_b_content,display_image_num)
+        self.viz.draw('b_style_a_content', b_style_a_content,display_image_num)
 
-
-
-if __name__== '__main__':
-    vis = Visdom(env='model_1')
-    vis.text('Hello World', win='text1')
+if __name__ == "__main__":
+    print(__doc__)
