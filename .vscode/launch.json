@@ -5,7 +5,6 @@
     "version": "0.2.0",
     "configurations": [
 
-
         {
             "name": "train_v4.py",
             "type": "python",
@@ -19,13 +18,13 @@
             ]
         },
         {
-            "name": "train_v5.py",
+            "name": "train_v7.py",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "args":[
-                "--config","configs/style_shoes_label_folder_v5.yaml",
+                "--config","configs/style_shoes_label_folder_v7.yaml",
                 "--trainer","MASTER",
                 "--gpu","0"
             ]

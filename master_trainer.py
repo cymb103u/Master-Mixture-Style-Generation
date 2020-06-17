@@ -407,8 +407,10 @@ class MASTER_Trainer(nn.Module):
             c_b, s_b_fake = self.gen.encode(x_b[i].unsqueeze(0),2)
             x_a_recon.append(self.gen.decode(c_a, s_a_fake,1))
             x_b_recon.append(self.gen.decode(c_b, s_b_fake,2))
+            # fix
             x_ba1.append(self.gen.decode(c_b, s_a1[i].unsqueeze(0),1))
             x_ba2.append(self.gen.decode(c_b, s_a2[i].unsqueeze(0),1))
+            # rand
             x_ab1.append(self.gen.decode(c_a, s_b1[i].unsqueeze(0),2))
             x_ab2.append(self.gen.decode(c_a, s_b2[i].unsqueeze(0),2))
         x_a_recon, x_b_recon = torch.cat(x_a_recon), torch.cat(x_b_recon)
@@ -432,12 +434,13 @@ class MASTER_Trainer(nn.Module):
         c_b, s_b_fake = self.gen.encode(x_b[rand_num_b].unsqueeze(0),2)
         for z in z_style_params:
             # fixed style code
-            s_interp1 = (1-z)*s_a1 + z*s_b1
+            s_interp1 = (1-z)*s_a1[0].unsqueeze(0) + z*s_b1[0].unsqueeze(0)
             # # random style code
             # s_interp2 = (1-z)*s_a2[rand_num_a] + z*s_b2[rand_num_b]
             # real style code
-            s_real_interp = (1-z)*s_a_fake + z*s_b_fake
-            if z == 0 or z_style == 1:
+            s_real_interp = (1-z)*s_a_fake  + z*s_b_fake 
+            # s_real_interp = s_real_interp.unsqueeze(0)
+            if z == 0 or z == 1:
                 c_a_fix.append(self.gen.decode(c_a,s_interp1,z+1))
                 c_b_fix.append(self.gen.decode(c_b,s_interp1,z+1))
                 c_a_real.append(self.gen.decode(c_a,s_real_interp,z+1))
