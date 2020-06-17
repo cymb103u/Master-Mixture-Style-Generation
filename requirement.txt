@@ -1,0 +1,5 @@
+visdom
+pandas==1.0.4
+seaborn
+matplotlib==3.2.1
+opencv-python==4.2.0.34

@@ -206,7 +206,7 @@ class MASTER_Trainer(nn.Module):
         super(MASTER_Trainer , self).__init__()
         lr = hyperparameters['lr']
         
-        self.gen = Master_Gen(hyperparameters['input_dim'],hyperparameters['gen']) # Auto-encoder + domain code
+        self.gen = Master_Gen(hyperparameters['input_dim'],hyperparameters['gen'],hyperparameters['batch_size']) # Auto-encoder + domain code
         self.dis_a = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain a
         self.dis_b = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain b
         self.instancenorm = nn.InstanceNorm2d(512, affine=False) # for VGG compute loss
