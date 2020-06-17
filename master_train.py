@@ -109,7 +109,9 @@ if __name__ == "__main__":
             if (iterations + 1) % config['image_display_iter'] == 0:
                 with torch.no_grad():
                     image_outputs = trainer.sample(train_display_images_a, train_display_images_b)
-                logger.draw_rand(image_outputs, display_size)
+                    images_interp = trainer.interpolation_sample(test_display_images_a , test_display_images_b)
+                logger.display(image_outputs,images_interp, display_size)
+
                 # write_2images(image_outputs, display_size, image_directory, 'train_current')
 
             # Save network weights

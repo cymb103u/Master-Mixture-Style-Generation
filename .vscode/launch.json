@@ -27,7 +27,7 @@
             "args":[
                 "--config","configs/style_shoes_label_folder_v5.yaml",
                 "--trainer","MASTER",
-                "--gpu","1"
+                "--gpu","0"
             ]
         },
         {
@@ -63,7 +63,7 @@
             "args":[
                 "--trainer", "MASTER",
                 "--config", "configs/style_shoes_label_folder_v6.yaml",
-                "--checkpoint", "outputs/style_shoes_label_folder_v6/checkpoints/gen_00125000.pt"
+                "--checkpoint", "outputs/style_shoes_label_folder_v6/checkpoints/gen_00225000.pt"
             ]
         },
     ]

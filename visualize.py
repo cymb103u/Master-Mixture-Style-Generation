@@ -22,7 +22,7 @@ class VisdomPlotter(object):
         else:
             self.viz.line(X=np.array([x]), Y=np.array([y]), env=self.env, win=self.plots[var_name], name=split_name)
 
-    def draw(self, var_name, images,display_image_num):
+    def draw(self, var_name, images,display_image_num=8):
         if var_name not in self.plots:
             self.plots[var_name] = self.viz.images(images,nrow=display_image_num, padding=0,\
                 env=self.env, opts=dict(title=f'{var_name}', caption=f'{var_name}'))
@@ -70,7 +70,7 @@ class Logger(object):
         self.hist_Dx = []
         self.hist_DGx = []
 
-    def draw_rand(self,train_sample,display_image_num):
+    def display(self,train_sample,images_interp,display_image_num):
         """
         train_sample : x_a, x_a_recon, x_ab1, x_ab2, x_b, x_b_recon, x_ba1, x_ba2
                         0     1          2       3    4      5         6      7 
@@ -88,6 +88,18 @@ class Logger(object):
         
         self.viz.draw('a_style_b_content', a_style_b_content,display_image_num)
         self.viz.draw('b_style_a_content', b_style_a_content,display_image_num)
+
+        """
+        images_interp:x_a[rand_num_a].unsqueeze(0),x_b[rand_num_b].unsqueeze(0),
+                        c_a_fix, c_a_real, c_b_fix, c_b_real
+        """
+        image_a_and_b = torch.cat([images_interp[0],images_interp[1]],0)
+        image_a_and_b = vutils.make_grid(image_a_and_b.data, nrow=2, padding=0, normalize=True)
+        self.viz.draw('image_a_and_b',image_a_and_b)
+        self.viz.draw('c_a_fix',images_interp[2])
+        self.viz.draw('c_a_real',images_interp[3])
+        self.viz.draw('c_b_fix',images_interp[4])
+        self.viz.draw('c_b_real',images_interp[5])
 
 if __name__ == "__main__":
     print(__doc__)

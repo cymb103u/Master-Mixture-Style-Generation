@@ -206,7 +206,7 @@ class MASTER_Trainer(nn.Module):
         super(MASTER_Trainer , self).__init__()
         lr = hyperparameters['lr']
         
-        self.gen = Master_Gen(hyperparameters['input_dim'],hyperparameters['gen'],hyperparameters['batch_size']) # Auto-encoder + domain code
+        self.gen = Master_Gen(hyperparameters['input_dim'],hyperparameters['gen']) # Auto-encoder + domain code
         self.dis_a = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain a
         self.dis_b = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain b
         self.instancenorm = nn.InstanceNorm2d(512, affine=False) # for VGG compute loss
@@ -372,7 +372,7 @@ class MASTER_Trainer(nn.Module):
         c_a, s_a_prime = self.gen.encode(x_a, 1)
         c_b, s_b_prime = self.gen.encode(x_b, 2)
         # style interpolation
-        s_inter = (1-z_style)*s_a_prime + z_style*s_b_prime 
+        s_inter = torch.mul((1-z_style),s_a_prime) + torch.mul(z_style,s_b_prime) 
         # decode
         c_b_inter = self.gen.decode(c_b, s_inter,0)
         c_a_inter = self.gen.decode(c_a, s_inter,0)
@@ -422,26 +422,36 @@ class MASTER_Trainer(nn.Module):
         self.eval()
         s_a1 = Variable(self.s_a)
         s_b1 = Variable(self.s_b)
-        s_a2 = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
-        s_b2 = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
+        # s_a2 = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
+        # s_b2 = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
         c_a_fix, c_a_rand,c_b_fix,c_b_rand = [], [], [], []
+        c_a_real, c_b_real = [], []
         z_style_params = [0,0.2,0.4,0.6,0.8,1]
-        rand_num = torch.randint(0,x_a.size(0),(1,))
-        c_a, s_a_fake = self.gen.encode(x_a[rand_num].unsqueeze(0),1)
-        c_b, s_b_fake = self.gen.encode(x_b[rand_num].unsqueeze(0),2)
+        rand_num_a, rand_num_b = torch.randint(0,x_a.size(0),(2,))
+        c_a, s_a_fake = self.gen.encode(x_a[rand_num_a].unsqueeze(0),1)
+        c_b, s_b_fake = self.gen.encode(x_b[rand_num_b].unsqueeze(0),2)
         for z in z_style_params:
             # fixed style code
             s_interp1 = (1-z)*s_a1 + z*s_b1
-            # random style code
-            s_interp2 = (1-z)*s_a2[rand_num] + z*s_b2[rand_num]
-            c_a_fix.append(self.gen.decode(c_a,s_interp1,0))
-            c_b_fix.append(self.gen.decode(c_b,s_interp1,0))
-            c_a_rand.append(self.gen.decode(c_a,s_interp2,0))
-            c_b_rand.append(self.gen.decode(c_b,s_interp2,0))
-        c_a_fix, c_a_rand = torch.cat(c_a_fix), torch.cat(c_a_rand)
-        c_b_fix, c_b_rand = torch.cat(c_b_fix), torch.cat(c_b_rand)
+            # # random style code
+            # s_interp2 = (1-z)*s_a2[rand_num_a] + z*s_b2[rand_num_b]
+            # real style code
+            s_real_interp = (1-z)*s_a_fake + z*s_b_fake
+            if z == 0 or z_style == 1:
+                c_a_fix.append(self.gen.decode(c_a,s_interp1,z+1))
+                c_b_fix.append(self.gen.decode(c_b,s_interp1,z+1))
+                c_a_real.append(self.gen.decode(c_a,s_real_interp,z+1))
+                c_b_real.append(self.gen.decode(c_b,s_real_interp,z+1))
+            else:
+                c_a_fix.append(self.gen.decode(c_a,s_interp1,0))
+                c_b_fix.append(self.gen.decode(c_b,s_interp1,0))
+                c_a_real.append(self.gen.decode(c_a,s_real_interp, 0))
+                c_b_real.append(self.gen.decode(c_b,s_real_interp, 0))
+        c_a_fix, c_a_real = torch.cat(c_a_fix), torch.cat(c_a_real)
+        c_b_fix, c_b_real = torch.cat(c_b_fix), torch.cat(c_b_real)
         self.train()
-        return   c_a_fix, c_a_rand,c_b_fix, c_b_rand
+        return  x_a[rand_num_a].unsqueeze(0),x_b[rand_num_b].unsqueeze(0),\
+            c_a_fix, c_a_real, c_b_fix, c_b_real
     
     def resume(self, checkpoint_dir, hyperparameters):
         # Load generators
@@ -543,11 +553,11 @@ class MASTER_Trainer_v2(nn.Module):
         c_a, s_a_prime = self.gen.encode(x_a,1)
         c_b, s_b_prime = self.gen.encode(x_b,2)
         # decode (within domain)
-        x_a_recon = self.gen.decode(c_a, s_a_prime)
-        x_b_recon = self.gen.decode(c_b, s_b_prime)
+        x_a_recon = self.gen.decode(c_a, s_a_prime,1)
+        x_b_recon = self.gen.decode(c_b, s_b_prime,2)
         # decode (cross domain)
-        x_ba = self.gen.decode(c_b, s_a_prime)
-        x_ab = self.gen.decode(c_a, s_b_prime)
+        x_ba = self.gen.decode(c_b, s_a_prime,1)
+        x_ab = self.gen.decode(c_a, s_b_prime,2)
         
         # encode again
         c_b_recon, s_a_recon = self.gen.encode(x_ba,1)
@@ -555,8 +565,8 @@ class MASTER_Trainer_v2(nn.Module):
  
         # decode again (if needed)
         # change self.gen input style code
-        x_aba = self.gen.decode(c_a_recon, s_a_recon) if hyperparameters['recon_x_cyc_w'] > 0 else None
-        x_bab = self.gen.decode(c_b_recon, s_b_recon) if hyperparameters['recon_x_cyc_w'] > 0 else None
+        x_aba = self.gen.decode(c_a_recon, s_a_recon,1) if hyperparameters['recon_x_cyc_w'] > 0 else None
+        x_bab = self.gen.decode(c_b_recon, s_b_recon,2) if hyperparameters['recon_x_cyc_w'] > 0 else None
 
         # reconstruction loss
         self.loss_gen_recon_x_a = self.recon_criterion(x_a_recon, x_a)
@@ -597,8 +607,8 @@ class MASTER_Trainer_v2(nn.Module):
         c_a, s_a_prime = self.gen.encode(x_a,1)
         c_b, s_b_prime = self.gen.encode(x_b,2)
         # decode (cross domain)
-        x_ba = self.gen.decode(c_b, s_a_prime)
-        x_ab = self.gen.decode(c_a, s_b_prime)
+        x_ba = self.gen.decode(c_b, s_a_prime,1)
+        x_ab = self.gen.decode(c_a, s_b_prime,2)
 
         # D loss
         self.loss_dis_a = self.dis_a.calc_dis_loss(x_ba.detach(), x_a)
@@ -609,16 +619,14 @@ class MASTER_Trainer_v2(nn.Module):
     
     def flow_gen_update(self,x_a, x_b,z_style,hyperparameters):
         self.gen_opt.zero_grad()
-        s_a = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
-        s_b = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
         # encode
         c_a, s_a_prime = self.gen.encode(x_a,1)
         c_b, s_b_prime = self.gen.encode(x_b,2)
         # style interpolation
         s_inter = (1-z_style)*s_a_prime + z_style*s_b_prime 
         # decode
-        c_b_inter = self.gen.decode(c_b,s_inter)
-        c_a_inter = self.gen.decode(c_a,s_inter)
+        c_b_inter = self.gen.decode(c_b,s_inter,0)
+        c_a_inter = self.gen.decode(c_a,s_inter,0)
         
         # invert 
         _ , c_b_inter_inv = self.gen.encode(c_b_inter,0)
@@ -636,16 +644,14 @@ class MASTER_Trainer_v2(nn.Module):
     
     def flow_dis_update(self,x_a, x_b,z_style,hyperparameters):
         self.dis_opt.zero_grad()
-        s_a = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
-        s_b = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
         # encode
         c_a, s_a_prime = self.gen.encode(x_a, 1)
         c_b, s_b_prime = self.gen.encode(x_b, 2)
         # style interpolation
         s_inter = (1-z_style)*s_a_prime + z_style*s_b_prime 
         # decode
-        c_b_inter = self.gen.decode(c_b, s_inter)
-        c_a_inter = self.gen.decode(c_a, s_inter)
+        c_b_inter = self.gen.decode(c_b, s_inter,0)
+        c_a_inter = self.gen.decode(c_a, s_inter,0)
         
         # D loss
         self.loss_dis_a = self.dis_a.calc_dis_loss(c_b_inter.detach(), x_a) +\

@@ -9,7 +9,8 @@ snapshot_save_iter: 25000     # How often do you want to save trained models
 log_iter: 10                  # How often do you want to log the training stats
 
 # optimization options
-max_iter: 1000000             # maximum number of training iterations
+# max_iter: 1000000             # maximum number of training iterations
+max_iter: 500000
 batch_size: 1                 # batch size
 weight_decay: 0.0001          # weight decay
 beta1: 0.5                    # Adam parameter
@@ -29,7 +30,6 @@ recon_lat_w: 1               # weight of flowing latent reconstruction loss
 
 # model options
 gen:
-  batch_size: 1
   dom_num: 2                  # domains number
   dim: 64                     # number of filters in the bottommost layer
   mlp_dim: 256                # number of filters in MLP
