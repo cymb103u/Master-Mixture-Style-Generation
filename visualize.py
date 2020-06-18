@@ -90,16 +90,16 @@ class Logger(object):
         self.viz.draw('b_style_a_content', b_style_a_content,display_image_num)
 
         """
-        images_interp:x_a[rand_num_a].unsqueeze(0),x_b[rand_num_b].unsqueeze(0),
-                        c_a_fix, c_a_real, c_b_fix, c_b_real
+        images_interp:x_a[rand_num_a].unsqueeze(0),x_b[rand_num_b].unsqueeze(0),c_a_fix, c_a_real, c_b_fix, c_b_real
+                            0                              1                       2       3          4        5
         """
         image_a_and_b = torch.cat([images_interp[0],images_interp[1]],0)
         image_a_and_b = vutils.make_grid(image_a_and_b.data, nrow=2, padding=0, normalize=True)
-        self.viz.draw('image_a_and_b',image_a_and_b)
         c_a_fix = vutils.make_grid(images_interp[2].data,nrow=6, padding=0, normalize=True)
         c_a_real = vutils.make_grid(images_interp[3], nrow=6, padding=0, normalize=True)
         c_b_fix = vutils.make_grid(images_interp[4], nrow=6, padding=0, normalize=True)
         c_b_real =  vutils.make_grid(images_interp[5], nrow=6, padding=0, normalize=True)
+        self.viz.draw('image_a_and_b',image_a_and_b)
         self.viz.draw('c_a_fix',c_a_fix)
         self.viz.draw('c_a_real',c_a_real)
         self.viz.draw('c_b_fix',c_b_fix)

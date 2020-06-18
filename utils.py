@@ -438,11 +438,15 @@ def visualize_results_to_video(input_directory,output_directory,fps=5):
             out.write(frame_array[i])
         out.release()
 
-def get_domainess(cur_iter, total_iter, batch):
-    alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
-    distribution = Beta(alpha, 1)
-    return distribution.sample((batch, 1)).cuda()
-
+def get_domainess(cur_iter, total_iter, batch, distribution_type='uniform'):
+    """distribution_type : uniform / beta"""
+    if distribution_type == 'beta':
+        alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
+        distribution = Beta(alpha, 1)
+        return distribution.sample((batch, 1)).cuda()
+    elif distribution_type == 'uniform':
+        distribution  = torch.distributions.uniform.Uniform(0,1)
+        return distribution.sample((batch, 1)).cuda()
 def get_domainess_pdf(cur_iter, total_iter,sample_num=10000):
     alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
     x = np.linspace(beta.ppf(0.0001, alpha, 1),beta.ppf(0.9999, alpha, 1), sample_num)
@@ -472,3 +476,5 @@ if __name__ == '__main__':
         plt.plot(x, density,'r-', linewidth=1, alpha=0.6, label='beta pdf')
         plt.savefig(f'beta_distribution_figures/plt_{current_iter:07d}iter.jpg')
         plt.clf()     
+    # for i  in range(50):
+    #     print(get_domainess(0,10000,1))
