@@ -82,7 +82,7 @@ if __name__ == "__main__":
     while True:
         for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
             images_a, images_b = images_a.cuda().detach(), images_b.cuda().detach()
-            z_style = get_domainess(iterations,max_iter,config['batch_size'])
+            z_style = get_domainess(iterations,max_iter,config['batch_size'],distribution_type=config['distribution_sample'])
             with Timer("Elapsed time in update: %f"):
                 # Main training code
                 trainer.dis_update(images_a, images_b, config)
