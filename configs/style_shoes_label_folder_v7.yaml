@@ -50,6 +50,7 @@ dis:
 ## data present (batch_zise,channel,h,w)
 input_dim: 3                                # input
 dom_num: 2                                  # domains number
+distribution_sample : uniform               # beta / uniform
 num_workers: 4                            # number of data loading threads
 new_size: 256                               # first resize the shortest image side to this size
 crop_image_height: 256                      # random crop image of this height

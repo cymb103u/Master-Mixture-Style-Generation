@@ -14,7 +14,7 @@
   * model = MASTER + flowing
 * style_shoes_label_folder_v5 : 
   * model = MASTER_v2 + flowing
-* style_shoes_label_folder_v6 : 在decode的時候加入domain資訊
+* style_shoes_label_folder_v6 : 在decode的時候加入domain資訊 + iteration 改成500000 +  beta distribution
   * model = MASTER + flowing
 * style_shoes_label_folder_v7 : 將 iteration 改成500000 和 domainess sample on uniform distribution
 ## commmand 

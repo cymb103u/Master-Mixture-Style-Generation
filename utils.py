@@ -455,26 +455,43 @@ def get_domainess_pdf(cur_iter, total_iter,sample_num=10000):
 
 if __name__ == '__main__':
     import glob
-    # in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v3/images"
-    # out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v3/"
-    # visualize_results_to_video(in_pth,out_pth) 
+    in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v6/images"
+    out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v6/"
+    visualize_results_to_video(in_pth,out_pth) 
     # print(type(img_list))
 
-    # visualize distribution
-    total_iter = 100000
-    sample_iter = np.linspace(0,total_iter,500,dtype=np.int)
-    for current_iter in sample_iter:
-        alpha, x, density = get_domainess_pdf(current_iter,total_iter)
-        # figure set
-        plt.grid()
-        plt.title(f'Be({alpha:.4f},1),current={current_iter:07d}')
-        plt.xlabel('x')
-        plt.ylabel('Density')
-        ## control x axe and y axe range
-        plt.xlim(0, 1) 
-        plt.ylim(0,8)
-        plt.plot(x, density,'r-', linewidth=1, alpha=0.6, label='beta pdf')
-        plt.savefig(f'beta_distribution_figures/plt_{current_iter:07d}iter.jpg')
-        plt.clf()     
-    # for i  in range(50):
-    #     print(get_domainess(0,10000,1))
+
+
+    # # visualize distribution
+    # total_iter = 100000
+    # sample_iter = np.linspace(0,total_iter,500,dtype=np.int)
+    # for current_iter in sample_iter:
+    #     alpha, x, density = get_domainess_pdf(current_iter,total_iter)
+    #     # figure set
+    #     plt.grid()
+    #     plt.title(f'Be({alpha:.4f},1),current={current_iter:07d}')
+    #     plt.xlabel('x')
+    #     plt.ylabel('Density')
+    #     ## control x axe and y axe range
+    #     plt.xlim(0, 1) 
+    #     plt.ylim(0,8)
+    #     plt.plot(x, density,'r-', linewidth=1, alpha=0.6, label='beta pdf')
+    #     plt.savefig(f'beta_distribution_figures/plt_{current_iter:07d}iter.jpg')
+    #     plt.clf()
+
+    # # distribution to vdo
+    # images_list = glob.glob(f'beta_distribution_figures/*')
+    # images_list.sort(key = lambda x: x[-16:-4])
+    # frame_array = []
+    # fps = 30
+    # for img_pth in images_list:
+    #     img = cv2.imread(img_pth)
+    #     height, width, channels = img.shape
+    #     size = (width,height)
+    #     #inserting the frames into an image array
+    #     frame_array.append(img)
+    #     out = cv2.VideoWriter(f'plot.avi',cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
+    #     for i in range(len(frame_array)):
+    #         # writing to a image array
+    #         out.write(frame_array[i])
+    # out.release()
