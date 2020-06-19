@@ -30,6 +30,7 @@ if __name__ == "__main__":
     parser.add_argument('--trainer', type=str, default='MASTER', help="MASTER|MUNIT|UNIT")
     parser.add_argument('--gpu', type=int , default='0')
     parser.add_argument('--vis_screen',type=str, default='gan')
+    parser.add_argument('--port',type=int,default=8097)
     opts = parser.parse_args()
     cudnn.benchmark = True
 
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     # # Domain code produce
     # dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
     # dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
-    logger = visualize.Logger(opts.vis_screen)
+    logger = visualize.Logger(opts.vis_screen,port=opts.port)
     while True:
         for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
             images_a, images_b = images_a.cuda().detach(), images_b.cuda().detach()

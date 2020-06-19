@@ -26,7 +26,8 @@
             "args":[
                 "--config","configs/style_shoes_label_folder_v7.yaml",
                 "--trainer","MASTER",
-                "--gpu","0"
+                "--gpu","1",
+                "--port","8000"
             ]
         },
         {

@@ -6,8 +6,8 @@ class VisdomPlotter(object):
 
     """Plots to Visdom"""
 
-    def __init__(self, env_name='gan'):
-        self.viz = Visdom()
+    def __init__(self, env_name='gan',port=8097):
+        self.viz = Visdom(port=port)
         self.env = env_name
         self.plots = {}
 
@@ -32,8 +32,8 @@ class VisdomPlotter(object):
 
 
 class Logger(object):
-    def __init__(self, vis_screen):
-        self.viz = VisdomPlotter(env_name=vis_screen)
+    def __init__(self, vis_screen,port=8097):
+        self.viz = VisdomPlotter(env_name=vis_screen,port=port)
         self.hist_D = []
         self.hist_G = []
         self.hist_Dx = []
