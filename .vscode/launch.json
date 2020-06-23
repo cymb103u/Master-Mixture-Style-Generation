@@ -55,15 +55,15 @@
             ]
         },
         {
-            "name": "Python: test_v6.py",
+            "name": "Python: test_v7.py",
             "type": "python",
             "request": "launch",
             "program": "master_test.py",
             "console": "integratedTerminal",
             "args":[
                 "--trainer", "MASTER",
-                "--config", "configs/style_shoes_label_folder_v6.yaml",
-                "--checkpoint", "outputs/style_shoes_label_folder_v6/checkpoints/gen_00225000.pt"
+                "--config", "configs/style_shoes_label_folder_v7.yaml",
+                "--checkpoint", "outputs/style_shoes_label_folder_v7/checkpoints/gen_00100000.pt"
             ]
         },
     ]
