@@ -18,13 +18,13 @@
             ]
         },
         {
-            "name": "train_v7.py",
+            "name": "train_v8.py",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "args":[
-                "--config","configs/style_shoes_label_folder_v7.yaml",
+                "--config","configs/style_shoes_label_folder_v8.yaml",
                 "--trainer","MASTER",
                 "--gpu","1",
                 "--port","8000"
