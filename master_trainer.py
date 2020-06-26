@@ -356,8 +356,7 @@ class MASTER_Trainer(nn.Module):
 
         # reconstuction  loss
         self.latent_s_loss = self.recon_criterion(s_interp,c_b_s_interp_inv) + self.recon_criterion(s_interp,c_a_s_interp_inv)
-        self.latent_c_loss = self.recon_criterion(c_a,c_a_c_inv)+ self.recon_criterion(c_b,c_b_c_inv)\
-                                if hyperparameters['recon_flowing_c_w'] > 0 else 0
+        self.latent_c_loss = self.recon_criterion(c_a,c_a_c_inv)+ self.recon_criterion(c_b,c_b_c_inv)if hyperparameters['recon_flowing_c_w'] > 0 else 0
         # GAN loss
         self.loss_gen_adv_a = self.dis_a.calc_gen_loss(c_b_interp)
         self.loss_gen_adv_b = self.dis_b.calc_gen_loss(c_a_interp)
@@ -731,5 +730,5 @@ class MASTER_Trainer_v2(nn.Module):
 
 if __name__== '__main__':
     # num = torch.LongTensor(1).random_(0, 10)
-    num = torch.randint(0,10, (3,))
+    num = torch.randint(0,2, (3,))
     print(num)

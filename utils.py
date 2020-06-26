@@ -443,7 +443,12 @@ def get_domainess(cur_iter, total_iter, batch, distribution_type='uniform'):
     if distribution_type == 'beta':
         alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
         distribution = Beta(alpha, 1)
-        return distribution.sample((batch, 1)).cuda()
+        rand_num =torch.randint(0,2, (1,)) #range 0-1
+        if rand_num == 0:
+            return distribution.sample((batch, 1)).cuda()
+        elif rand_num == 1:
+            return torch.abs(1-distribution.sample((batch, 1)).cuda())
+            
     elif distribution_type == 'uniform':
         distribution  = torch.distributions.uniform.Uniform(0,1)
         return distribution.sample((batch, 1)).cuda()
