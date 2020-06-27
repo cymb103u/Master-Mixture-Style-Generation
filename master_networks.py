@@ -262,7 +262,11 @@ class VAEGen(nn.Module):
 ##################################################################################
 # Encoder and Decoders
 ##################################################################################
-
+class CIN_StyleEncoder(nn.Module):
+    def __init__(self):
+        super(CIN_StyleEncoder,self).__init__()
+    def forward(self,x,condition):
+        return
 class StyleEncoder(nn.Module):
     def __init__(self, n_downsample, input_dim, dim, style_dim, norm, activ, pad_type):
         super(StyleEncoder, self).__init__()
