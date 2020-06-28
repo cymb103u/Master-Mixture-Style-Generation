@@ -20,7 +20,7 @@
 * style_shoes_label_folder_v8 : 在decode的時候加入domain資訊 + iteration 1000000 +  beta distribution
   * model = MASTER + flowing
 * style_shoes_label_folder_v9 : iteration 500000 + beta distribution + flowing加上content loss
-* * style_shoes_label_folder_v10 : iteration 500000 + beta distribution + flowing加上content loss +condition Instance normalization 
+* style_shoes_label_folder_v10 : iteration 500000 + beta distribution + flowing加上content loss +condition Instance normalization 
 ## commmand 
 
 - nohup python master_train.py --config configs/style_shoes_label_folder_v2.yaml --trainer MASTER_v2 --gpu 0 &> v2_log.txt &
