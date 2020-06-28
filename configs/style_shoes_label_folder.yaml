@@ -31,7 +31,9 @@ recon_flowing_c_w : 1         # weight of flowing content latent reconstruction 
 
 # model options
 gen:
+  style_cond: condin      # condition type : [norm/condin] concatenate or using condition norm layer
   dom_num: 2                  # domains number
+  nlatent: 16
   dim: 64                     # number of filters in the bottommost layer
   mlp_dim: 256                # number of filters in MLP
   style_dim: 8                # length of style code

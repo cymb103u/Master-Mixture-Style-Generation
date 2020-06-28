@@ -447,11 +447,12 @@ def get_domainess(cur_iter, total_iter, batch, distribution_type='uniform'):
         if rand_num == 0:
             return distribution.sample((batch, 1)).cuda()
         elif rand_num == 1:
-            return torch.abs(1-distribution.sample((batch, 1)).cuda())
+            return 1-distribution.sample((batch, 1)).cuda()
             
     elif distribution_type == 'uniform':
         distribution  = torch.distributions.uniform.Uniform(0,1)
         return distribution.sample((batch, 1)).cuda()
+
 def get_domainess_pdf(cur_iter, total_iter,sample_num=10000):
     alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
     x = np.linspace(beta.ppf(0.0001, alpha, 1),beta.ppf(0.9999, alpha, 1), sample_num)

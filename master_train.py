@@ -75,9 +75,6 @@ if __name__ == "__main__":
     # Start training
     iterations = trainer.resume(checkpoint_directory, hyperparameters=config) if opts.resume else 0
 
-    # # Domain code produce
-    # dom_zero = domain_code_produce(config,config['batch_size'],0).cuda()
-    # dom_one = domain_code_produce(config,config['batch_size'],1).cuda()
     logger = visualize.Logger(opts.vis_screen,port=opts.port)
     while True:
         for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
