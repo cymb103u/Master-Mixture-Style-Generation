@@ -276,6 +276,7 @@ class CIN_StyleEncoder(nn.Module):
     def __init__(self, n_downsample, dom_num, nlatent, input_dim, dim, style_dim, norm, activ, pad_type):
         super(CIN_StyleEncoder,self).__init__()
         self.g_domainess = nn.Linear(dom_num,nlatent)
+        
         self.cin_con = []
         self.cin_con += [CIN_Conv2dBlock(input_dim, dim, 7, 1, 3, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
         for i in range(2):
@@ -285,9 +286,23 @@ class CIN_StyleEncoder(nn.Module):
             self.cin_con += [CIN_Conv2dBlock(dim, dim, 4, 2, 1, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
         
         self.model_lens = len(self.cin_con)
-        # self.model = TwoInputSequential(*self.model)
         self.gap = nn.AdaptiveAvgPool2d(1) # global average pooling
         self.output_layer = nn.Conv2d(dim, style_dim, 1, 1, 0)
+        '''
+        self.model = []
+        self.model += [CIN_Conv2dBlock(input_dim, dim, 7, 1, 3, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
+        for i in range(2):
+            self.model += [CIN_Conv2dBlock(dim, 2 * dim, 4, 2, 1, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
+            dim *= 2
+        for i in range(n_downsample - 2):
+            self.model += [CIN_Conv2dBlock(dim, dim, 4, 2, 1, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
+        self.model += [nn.AdaptiveAvgPool2d(1)] # global average pooling
+        self.model += [nn.Conv2d(dim, style_dim, 1, 1, 0)]
+        print(self.model)
+        print('end')
+        self.model = TwoInputSequential(*self.model)
+        print(self.model)
+        '''
         self.output_dim = dim
     def forward(self, x, domain):
         domain = domain.view(domain.size(0),-1)
@@ -297,6 +312,7 @@ class CIN_StyleEncoder(nn.Module):
             out = self.cin_con[i](out, domain_vector)
         out = self.gap(out)
         out = self.output_layer(out)            
+        # out = self.model(x, domain_vector)
         return out
 
 class StyleEncoder(nn.Module):
@@ -502,9 +518,16 @@ class CIN_Conv2dBlock(nn.Module):
             self.conv = SpectralNorm(nn.Conv2d(input_dim, output_dim, kernel_size, stride, bias=self.use_bias))
         else:
             self.conv = nn.Conv2d(input_dim, output_dim, kernel_size, stride, bias=self.use_bias).cuda()
-        self.cin_block = [MergeModule(self.conv,self.norm),self.activation]
+        self.cin_block = [self.pad,MergeModule(self.conv,self.norm),self.activation]
+        # print(self.cin_block)
         self.cin_block = TwoInputSequential(*self.cin_block)
+        # print(self.cin_block)
     def forward(self, x, domainess):
+        # x = self.conv(self.pad(x))
+        # x = self.norm(x,domainess)
+        # x = self.activation(x)
+        # return x
+
         return self.cin_block(x, domainess)
 
 class LinearBlock(nn.Module):
