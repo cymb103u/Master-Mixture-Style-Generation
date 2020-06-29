@@ -8,6 +8,7 @@ from torch import nn
 from torch.autograd import Variable
 import torch
 import torch.nn.functional as F
+import utils
 try:
     from itertools import izip as zip
 except ImportError: # will be 3.x series
@@ -165,6 +166,10 @@ class Master_Gen(nn.Module):
         self.style_cond = params['style_cond']
         self.dom_code_encode = domain_code_produce_encoder(1, 256, dom_num)
         self.dom_code_decode = domain_code_produce_decoder(1, dom_num)
+        # domainess projection
+        self.g_domainess = nn.Linear(dom_num,nlatent)
+        utils.weights_init(self.g_domainess)
+
         # style encoder
         if self.style_cond =='condin':
             self.enc_style = CIN_StyleEncoder(4, dom_num, nlatent, input_dim, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)
@@ -176,7 +181,11 @@ class Master_Gen(nn.Module):
         self.dec = Decoder(n_downsample, n_res, self.enc_content.output_dim, input_dim, res_norm='adain', activ=activ, pad_type=pad_type)
 
         # MLP to generate AdaIN parameters
-        self.mlp = MLP(style_dim + dom_num, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
+        if self.style_cond == 'condin':
+            self.cin_layer = CondInstanceNorm(style_dim, nlatent)
+            self.mlp = MLP(style_dim, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
+        elif self.style_cond == 'norm':
+            self.mlp = MLP(style_dim + dom_num, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
 
     def encode(self, images,dom_spc):
         # encode an image to its content and style codes
@@ -184,7 +193,9 @@ class Master_Gen(nn.Module):
         # add domain code on image
         if self.style_cond == 'condin':
             dom_code = self.dom_code_decode[dom_spc]
-            style_latent = self.enc_style(images,dom_code)
+            dom_code = dom_code.view(dom_code.size(0),-1)
+            domain_vector = self.g_domainess(dom_code)
+            style_latent = self.enc_style(images,domain_vector)
         elif self.style_cond =='norm':
             dom_code = self.dom_code_encode[dom_spc]
             images = torch.cat((images,dom_code),1)
@@ -201,7 +212,14 @@ class Master_Gen(nn.Module):
             將出來的 feature 當作 AdaIN Parameters, 餵入Residaul block
         """
         # add domain information when decoding
-        tensor = torch.cat([style,self.dom_code_decode[dom_spc]],dim=1)
+        if self.style_cond == 'condin':
+            dom_code = self.dom_code_decode[dom_spc]
+            dom_code = dom_code.view(dom_code.size(0),-1)
+            domain_vector = self.g_domainess(dom_code)
+            domain_vector = torch.unsqueeze(torch.unsqueeze(domain_vector, 2), 3)
+            tensor = self.cin_layer(style,domain_vector)
+        elif self.style_cond =='condin':
+            tensor = torch.cat([style,self.dom_code_decode[dom_spc]],dim=1)
         adain_params = self.mlp(tensor)
         self.assign_adain_params(adain_params, self.dec)
         images = self.dec(content)
@@ -275,8 +293,6 @@ class VAEGen(nn.Module):
 class CIN_StyleEncoder(nn.Module):
     def __init__(self, n_downsample, dom_num, nlatent, input_dim, dim, style_dim, norm, activ, pad_type):
         super(CIN_StyleEncoder,self).__init__()
-        self.g_domainess = nn.Linear(dom_num,nlatent)
-        
         self.cin_con = []
         self.cin_con += [CIN_Conv2dBlock(input_dim, dim, 7, 1, 3, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
         for i in range(2):
@@ -288,25 +304,10 @@ class CIN_StyleEncoder(nn.Module):
         self.model_lens = len(self.cin_con)
         self.gap = nn.AdaptiveAvgPool2d(1) # global average pooling
         self.output_layer = nn.Conv2d(dim, style_dim, 1, 1, 0)
-        '''
-        self.model = []
-        self.model += [CIN_Conv2dBlock(input_dim, dim, 7, 1, 3, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
-        for i in range(2):
-            self.model += [CIN_Conv2dBlock(dim, 2 * dim, 4, 2, 1, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
-            dim *= 2
-        for i in range(n_downsample - 2):
-            self.model += [CIN_Conv2dBlock(dim, dim, 4, 2, 1, norm=norm, activation=activ, pad_type=pad_type, nlatent=nlatent)]
-        self.model += [nn.AdaptiveAvgPool2d(1)] # global average pooling
-        self.model += [nn.Conv2d(dim, style_dim, 1, 1, 0)]
-        print(self.model)
-        print('end')
-        self.model = TwoInputSequential(*self.model)
-        print(self.model)
-        '''
         self.output_dim = dim
-    def forward(self, x, domain):
-        domain = domain.view(domain.size(0),-1)
-        domain_vector = torch.unsqueeze(torch.unsqueeze(self.g_domainess(domain), 2), 3) # domainess condition (1, 16, 1, 1)
+    def forward(self, x, domain_vector):
+        # domain = domain.view(domain.size(0),-1)
+        domain_vector = torch.unsqueeze(torch.unsqueeze(domain_vector, 2), 3) # domainess condition (1, nlatent, 1, 1)
         out = self.cin_con[0](x, domain_vector)
         for i in range(1,self.model_lens):
             out = self.cin_con[i](out, domain_vector)

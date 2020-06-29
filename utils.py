@@ -45,7 +45,11 @@ from scipy.stats import beta
 # vgg_preprocess
 # get_scheduler
 # weights_init
-
+# domain_code_produce_encoder
+# domain_code_produce_decoder
+# visualize_results_to_video
+# get_domainess
+# get_domainess_pdf
 def get_all_data_loaders(conf):
     batch_size = conf['batch_size']
     num_workers = conf['num_workers']
