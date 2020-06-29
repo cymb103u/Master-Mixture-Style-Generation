@@ -166,42 +166,26 @@ class Master_Gen(nn.Module):
         self.style_cond = params['style_cond']
         self.dom_code_encode = domain_code_produce_encoder(1, 256, dom_num)
         self.dom_code_decode = domain_code_produce_decoder(1, dom_num)
-        # domainess projection
-        self.g_domainess = nn.Linear(dom_num,nlatent)
-        utils.weights_init(self.g_domainess)
+
 
         # style encoder
-        if self.style_cond =='condin':
-            self.enc_style = CIN_StyleEncoder(4, dom_num, nlatent, input_dim, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)
-        elif self.style_cond =='norm':
-            self.enc_style = StyleEncoder(4, input_dim+dom_num, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)
+        self.enc_style = StyleEncoder(4, input_dim+dom_num, dim, style_dim, norm='none', activ=activ, pad_type=pad_type)
 
         # content encoder
         self.enc_content = ContentEncoder(n_downsample, n_res, input_dim, dim, 'in', activ, pad_type=pad_type)
         self.dec = Decoder(n_downsample, n_res, self.enc_content.output_dim, input_dim, res_norm='adain', activ=activ, pad_type=pad_type)
 
         # MLP to generate AdaIN parameters
-        if self.style_cond == 'condin':
-            self.cin_layer = CondInstanceNorm(style_dim, nlatent)
-            self.mlp = MLP(style_dim, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
-        elif self.style_cond == 'norm':
-            self.mlp = MLP(style_dim + dom_num, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
+        self.mlp = MLP(style_dim + dom_num, self.get_num_adain_params(self.dec), mlp_dim, 3, norm='none', activ=activ)
 
     def encode(self, images,dom_spc):
         # encode an image to its content and style codes
         content_latent = self.enc_content(images)
         # add domain code on image
-        if self.style_cond == 'condin':
-            dom_code = self.dom_code_decode[dom_spc]
-            dom_code = dom_code.view(dom_code.size(0),-1)
-            domain_vector = self.g_domainess(dom_code)
-            style_latent = self.enc_style(images,domain_vector)
-        elif self.style_cond =='norm':
-            dom_code = self.dom_code_encode[dom_spc]
-            images = torch.cat((images,dom_code),1)
-            style_latent = self.enc_style(images)
-        else:
-            assert 0, "Unsupported style condition: {}".format(self.style_cond)
+        dom_code = self.dom_code_encode[dom_spc]
+        images = torch.cat((images,dom_code),1)
+        style_latent = self.enc_style(images)
+
         return content_latent, style_latent
         
     def decode(self, content, style, dom_spc):
@@ -212,14 +196,7 @@ class Master_Gen(nn.Module):
             將出來的 feature 當作 AdaIN Parameters, 餵入Residaul block
         """
         # add domain information when decoding
-        if self.style_cond == 'condin':
-            dom_code = self.dom_code_decode[dom_spc]
-            dom_code = dom_code.view(dom_code.size(0),-1)
-            domain_vector = self.g_domainess(dom_code)
-            domain_vector = torch.unsqueeze(torch.unsqueeze(domain_vector, 2), 3)
-            tensor = self.cin_layer(style,domain_vector)
-        elif self.style_cond =='condin':
-            tensor = torch.cat([style,self.dom_code_decode[dom_spc]],dim=1)
+        tensor = torch.cat([style,self.dom_code_decode[dom_spc]],dim=1)
         adain_params = self.mlp(tensor)
         self.assign_adain_params(adain_params, self.dec)
         images = self.dec(content)
