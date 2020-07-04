@@ -3,6 +3,7 @@ Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 """
 # from torch.utils.serialization import load_lua
+from numpy.linalg.linalg import norm
 from torch.utils.data import DataLoader
 from networks import Vgg16
 from torch.autograd import Variable
@@ -191,16 +192,21 @@ def write_loss(iterations, trainer, train_writer):
     for m in members:
         train_writer.add_scalar(m, getattr(trainer, m), iterations + 1)
 
-
+# val = z_style (ratio)
 def slerp(val, low, high):
     """
     original: Animating Rotation with Quaternion Curves, Ken Shoemake
     https://arxiv.org/abs/1609.04468
     Code: https://github.com/soumith/dcgan.torch/issues/14, Tom White
     """
-    omega = np.arccos(np.dot(low / np.linalg.norm(low), high / np.linalg.norm(high)))
-    so = np.sin(omega)
-    return np.sin((1.0 - val) * omega) / so * low + np.sin(val * omega) / so * high
+    # omega = np.arccos(np.dot(low / np.linalg.norm(low), high / np.linalg.norm(high)))
+    # so = np.sin(omega)
+    # return np.sin((1.0 - val) * omega) / so * low + np.sin(val * omega) / so * high
+
+    omega = torch.acos(torch.dot(low.view(-1)/ torch.norm(low.view(-1)), high.view(-1) / torch.norm(high.view(-1))))
+    so = torch.sin(omega)
+    return torch.sin((1.0 - val) * omega) / so * low + torch.sin(val * omega) / so * high
+    
 
 
 def get_slerp_interp(nb_latents, nb_interp, z_dim):
@@ -470,8 +476,14 @@ if __name__ == '__main__':
     visualize_results_to_video(in_pth,out_pth) 
     # print(type(img_list))
 
-
-
+    # x = np.array([1.223,-1.2,0.745,2.7,-3.501])
+    # y = np.array([2.01,.1415,-4.76,-0.50004,1.56])
+    # value = slerp(0.3,x,y)
+    # print(value)
+    # x = torch.FloatTensor([1.223,-1.2,0.745,2.7,-3.501])
+    # y = torch.FloatTensor([2.01,.1415,-4.76,-0.50004,1.56])
+    # value = slerp(0.3,x,y)
+    # print(value)
     # # visualize distribution
     # total_iter = 100000
     # sample_iter = np.linspace(0,total_iter,500,dtype=np.int)

@@ -4,7 +4,7 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 """
 from master_networks import AdaINGen, MsImageDis, VAEGen,Master_Gen
 from utils import weights_init, get_model_list, vgg_preprocess, load_vgg16,\
-     get_scheduler,get_config
+     get_scheduler,get_config,slerp
 from torch.autograd import Variable
 import torch
 import torch.nn as nn
@@ -345,7 +345,10 @@ class MASTER_Trainer(nn.Module):
         c_a, s_a_prime = self.gen.encode(x_a,1)
         c_b, s_b_prime = self.gen.encode(x_b,2)
         # style interpolation
-        s_interp = (1-z_style)*s_a_prime + z_style*s_b_prime 
+        # intuitive
+        # s_interp = (1-z_style)*s_a_prime + z_style*s_b_prime
+        # slerp
+        s_interp = slerp(z_style,s_a_prime,s_b_prime) 
         # decode
         c_b_interp = self.gen.decode(c_b,s_interp,0)
         c_a_interp = self.gen.decode(c_a,s_interp,0)

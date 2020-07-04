@@ -62,7 +62,7 @@
             "console": "integratedTerminal",
             "args":[
                 "--trainer", "MASTER",
-                "--config", "configs/style_shoes_label_folder_v7.yaml",
+                "--config", "configs/style_shoes_label_folder_v10.yaml",
                 "--checkpoint", "outputs/style_shoes_label_folder_v7/checkpoints/gen_00100000.pt"
             ]
         },
