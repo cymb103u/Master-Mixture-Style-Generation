@@ -441,11 +441,12 @@ class MASTER_Trainer(nn.Module):
         c_b, s_b_fake = self.gen.encode(x_b[rand_num_b].unsqueeze(0),2)
         for z in z_style_params:
             # fixed style code
-            s_interp1 = (1-z)*s_a1[0].unsqueeze(0) + z*s_b1[0].unsqueeze(0)
+            # s_interp1 = (1-z)*s_a1[0].unsqueeze(0) + z*s_b1[0].unsqueeze(0)
+            s_interp1 = self.interpolation(z,s_a1[0].unsqueeze(0),s_b1[0].unsqueeze(0))
             # # random style code
             # s_interp2 = (1-z)*s_a2[rand_num_a] + z*s_b2[rand_num_b]
             # real style code
-            s_real_interp = (1-z)*s_a_fake  + z*s_b_fake 
+            s_real_interp = self.interpolation( z, s_a_fake, s_b_fake) 
             # s_real_interp = s_real_interp.unsqueeze(0)
             if z == 0 or z == 1:
                 c_a_fix.append(self.gen.decode(c_a,s_interp1,z+1))

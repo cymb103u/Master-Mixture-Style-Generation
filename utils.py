@@ -202,7 +202,7 @@ class lerp(nn.Module):
 class slerp(nn.Module):
     def __init__(self):
         super(slerp, self).__init__()
-    def forward(self, val,low,high):
+    def forward(self, val, low, high):
         omega = torch.acos(torch.dot(low.view(-1)/ torch.norm(low.view(-1)), high.view(-1) / torch.norm(high.view(-1))))
         so = torch.sin(omega)
         return torch.sin((1.0 - val) * omega) / so * low + torch.sin(val * omega) / so * high
