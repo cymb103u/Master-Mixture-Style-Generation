@@ -19,7 +19,7 @@
 * style_shoes_label_folder_v7 : 將 iteration 改成500000 和 domainess sample on uniform distribution
 * style_shoes_label_folder_v8 : 在decode的時候加入domain資訊 + iteration 1000000 +  beta distribution
   * model = MASTER + flowing
-* style_shoes_label_folder_v9 : iteration 500000 + beta distribution(half) + flowing加上content loss (Good)
+* style_shoes_label_folder_v9 : iteration 500000 + beta distribution(half) + flowing加上content loss (Good) [在241上]
 * style_shoes_label_folder_v10 : iteration 500000 + beta distribution(half) + flowing加上content loss +condition Instance normalization (結果差)
 * style_shoes_label_folder_v11 : iteration 500000 + beta distribution(half) + flowing加上content loss +condition Instance normalization
   * nlatent 16--> 8 and style encoder (nn.Linear + activation+ weights init)
