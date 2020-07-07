@@ -24,6 +24,8 @@
 * style_shoes_label_folder_v11 : iteration 500000 + beta distribution(half) + flowing加上content loss +condition Instance normalization
   * nlatent 16--> 8 and style encoder (nn.Linear + activation+ weights init)
 * v10 , v11 參考MUNIT p8 style encoder 結論白忙一場
+* style_shoes_label_folder_v12 : iteration 500000 + beta distribution(half) + flowing加上content loss + slerp
+* style_shoes_label_folder_v13 : iteration 1000000 + beta distribution(half) + flowing加上content loss + slerp
 ## commmand 
 
 - nohup python master_train.py --config configs/style_shoes_label_folder_v2.yaml --trainer MASTER_v2 --gpu 0 &> v2_log.txt &

@@ -162,7 +162,7 @@ class Master_Gen(nn.Module):
         pad_type = params['pad_type']
         mlp_dim = params['mlp_dim']
         dom_num = params['dom_num']
-        nlatent = params['nlatent']
+        # nlatent = params['nlatent']
         self.style_cond = params['style_cond']
         self.dom_code_encode = domain_code_produce_encoder(1, 256, dom_num)
         self.dom_code_decode = domain_code_produce_decoder(1, dom_num)
