@@ -1,6 +1,9 @@
 
 from __future__ import print_function
-from utils import get_config, pytorch03_to_pytorch04,get_all_data_loaders,slerp
+
+from torch.nn.functional import interpolate
+from utils import get_config, pytorch03_to_pytorch04,get_all_data_loaders,\
+                    slerp,lerp
 from master_trainer import MUNIT_Trainer,MASTER_Trainer,MASTER_Trainer_v2
 import argparse
 from torch.autograd import Variable
@@ -32,7 +35,7 @@ cudnn.benchmark = True
 
 GPU = opts.gpu
 torch.cuda.set_device(GPU)
-
+interpolation = slerp()if opts.interpolation =='slerp' else lerp()
 
 # Load experiment setting
 model_name = os.path.splitext(os.path.basename(opts.config))[0]
@@ -76,10 +79,7 @@ with torch.no_grad():
         all_img = torch.cat([img_a.cuda(),img_b.cuda(),img_b2a,img_a2b])
         z_interp = None
         for z in z_style_params:
-            if opt.interpolation =='lerp':
-                z_interp = (1-z)*style_a+z*style_b
-            elif opt.interpolation =='slerp':
-                z_interp = slerp(z,style_a,style_b)
+            z_interp = interpolation(z,style_a,style_b)
             z_style.append(z_interp)
             if z==0 or z==1:
                 content_a_interp.append(decode(content_a,z_interp,z+1))
