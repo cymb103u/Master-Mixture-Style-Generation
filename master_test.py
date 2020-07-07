@@ -29,7 +29,7 @@ parser.add_argument('--output_only', action='store_true', help="whether use sync
 parser.add_argument('--output_path', type=str, default='.', help="path for logs, checkpoints, and VGG model weight")
 parser.add_argument('--trainer', type=str, default='MASTER', help="MUNIT|MASTER|MASTER_v2")
 parser.add_argument('--gpu', type=int , default='0')
-parser.add_argument('--interpolation', type='string' ,help='slerp|lerp')
+parser.add_argument('--interpolation', type=str ,help='slerp|lerp')
 opts = parser.parse_args()
 cudnn.benchmark = True
 

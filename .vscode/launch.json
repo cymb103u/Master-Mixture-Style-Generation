@@ -51,7 +51,7 @@
             "args":[
                 "--trainer", "MASTER",
                 "--config", "configs/style_shoes_label_folder_v2.yaml",
-                "--checkpoint", "outputs/style_shoes_label_folder_v2/checkpoints/gen_00075000.pt",
+                "--checkpoint", "outputs/style_shoes_label_folder_v2/checkpoints/gen_00125000.pt",
                 "--interpolation","slerp"
             ]
         },
