@@ -22,6 +22,7 @@ import shutil
 import visualize
 
 if __name__ == "__main__":
+    #  it is able to run on windows after add following line
     torch.multiprocessing.freeze_support()   
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default='configs/edges2handbags_folder.yaml', help='Path to the config file.')
