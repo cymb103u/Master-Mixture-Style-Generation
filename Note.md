@@ -2,7 +2,7 @@
 
 * style_shoes_label_folder: 原本模型架構
 * style_shoes_label_folder2: 將原本兩個gen改成一個
-* style_shoes_label_folder_v2 : 一個 gen + cycle  loss*10 (MASTER)
+* style_shoes_label_folder_v2 : 一個 gen + cycle  loss*10 (MASTER) // 20/07/07
 
 ## randn --> style encoder
 
