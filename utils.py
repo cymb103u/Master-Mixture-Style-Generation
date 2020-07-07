@@ -192,20 +192,38 @@ def write_loss(iterations, trainer, train_writer):
     for m in members:
         train_writer.add_scalar(m, getattr(trainer, m), iterations + 1)
 
-# val = z_style (ratio)
-def slerp(val, low, high):
-    """
-    original: Animating Rotation with Quaternion Curves, Ken Shoemake
-    https://arxiv.org/abs/1609.04468
-    Code: https://github.com/soumith/dcgan.torch/issues/14, Tom White
-    """
-    # omega = np.arccos(np.dot(low / np.linalg.norm(low), high / np.linalg.norm(high)))
-    # so = np.sin(omega)
-    # return np.sin((1.0 - val) * omega) / so * low + np.sin(val * omega) / so * high
 
-    omega = torch.acos(torch.dot(low.view(-1)/ torch.norm(low.view(-1)), high.view(-1) / torch.norm(high.view(-1))))
-    so = torch.sin(omega)
-    return torch.sin((1.0 - val) * omega) / so * low + torch.sin(val * omega) / so * high
+class lerp(nn.Module):
+    def __init__(self):
+        super(lerp, self).__init__()
+    def forward(self, val,low,high):
+        return torch.mul((1-val),low) +torch.mul(val,high) 
+        
+class slerp(nn.Module):
+    def __init__(self):
+        super(slerp, self).__init__()
+    def forward(self, val,low,high):
+        omega = torch.acos(torch.dot(low.view(-1)/ torch.norm(low.view(-1)), high.view(-1) / torch.norm(high.view(-1))))
+        so = torch.sin(omega)
+        return torch.sin((1.0 - val) * omega) / so * low + torch.sin(val * omega) / so * high
+
+# def lerp(val, low, high):
+#     return (1-val)*low + val*high
+
+# val = z_style (ratio)
+# def slerp(val, low, high):
+#     """
+#     original: Animating Rotation with Quaternion Curves, Ken Shoemake
+#     https://arxiv.org/abs/1609.04468
+#     Code: https://github.com/soumith/dcgan.torch/issues/14, Tom White
+#     """
+#     # omega = np.arccos(np.dot(low / np.linalg.norm(low), high / np.linalg.norm(high)))
+#     # so = np.sin(omega)
+#     # return np.sin((1.0 - val) * omega) / so * low + np.sin(val * omega) / so * high
+
+#     omega = torch.acos(torch.dot(low.view(-1)/ torch.norm(low.view(-1)), high.view(-1) / torch.norm(high.view(-1))))
+#     so = torch.sin(omega)
+#     return torch.sin((1.0 - val) * omega) / so * low + torch.sin(val * omega) / so * high
     
 
 

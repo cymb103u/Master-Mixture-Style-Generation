@@ -4,7 +4,7 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 """
 from master_networks import AdaINGen, MsImageDis, VAEGen,Master_Gen
 from utils import weights_init, get_model_list, vgg_preprocess, load_vgg16,\
-     get_scheduler,get_config,slerp
+     get_scheduler,get_config,slerp,lerp
 from torch.autograd import Variable
 import torch
 import torch.nn as nn
@@ -205,7 +205,7 @@ class MASTER_Trainer(nn.Module):
     def __init__(self,hyperparameters):
         super(MASTER_Trainer , self).__init__()
         lr = hyperparameters['lr']
-        
+        self.interpolation = slerp()if hyperparameters['interpolation'] =='slerp' else lerp()
         self.gen = Master_Gen(hyperparameters['input_dim'],hyperparameters['gen']) # Auto-encoder + domain code
         self.dis_a = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain a
         self.dis_b = MsImageDis(hyperparameters['input_dim'], hyperparameters['dis']) # discriminator for domain b
@@ -316,7 +316,10 @@ class MASTER_Trainer(nn.Module):
                               hyperparameters['recon_x_cyc_w'] * self.loss_gen_cycrecon_x_b + \
                               hyperparameters['vgg_w'] * self.loss_gen_vgg_a + \
                               hyperparameters['vgg_w'] * self.loss_gen_vgg_b
-        self.loss_gen_total.backward()
+        #  issue loss backward retain_graph=True
+        # https://www.itdaan.com/tw/9f77786d0785914ec8f47e6f6662aa85 
+        # https://zhuanlan.zhihu.com/p/33378444
+        self.loss_gen_total.backward(retain_graph=True)
         self.gen_opt.step()
 
     def dis_update(self, x_a, x_b, hyperparameters):
@@ -334,7 +337,7 @@ class MASTER_Trainer(nn.Module):
         self.loss_dis_a = self.dis_a.calc_dis_loss(x_ba.detach(), x_a)
         self.loss_dis_b = self.dis_b.calc_dis_loss(x_ab.detach(), x_b)
         self.loss_dis_total = hyperparameters['gan_w'] * self.loss_dis_a + hyperparameters['gan_w'] * self.loss_dis_b
-        self.loss_dis_total.backward()
+        self.loss_dis_total.backward(retain_graph=True)
         self.dis_opt.step()
 
     def flow_gen_update(self,x_a, x_b,z_style,hyperparameters):
@@ -348,7 +351,7 @@ class MASTER_Trainer(nn.Module):
         # intuitive
         # s_interp = (1-z_style)*s_a_prime + z_style*s_b_prime
         # slerp
-        s_interp = slerp(z_style,s_a_prime,s_b_prime) 
+        s_interp = self.interpolation(z_style,s_a_prime,s_b_prime)
         # decode
         c_b_interp = self.gen.decode(c_b,s_interp,0)
         c_a_interp = self.gen.decode(c_a,s_interp,0)
@@ -361,11 +364,11 @@ class MASTER_Trainer(nn.Module):
         self.latent_s_loss = self.recon_criterion(s_interp,c_b_s_interp_inv) + self.recon_criterion(s_interp,c_a_s_interp_inv)
         self.latent_c_loss = self.recon_criterion(c_a,c_a_c_inv)+ self.recon_criterion(c_b,c_b_c_inv)if hyperparameters['recon_flowing_c_w'] > 0 else 0
         # GAN loss
-        self.loss_gen_adv_a = self.dis_a.calc_gen_loss(c_b_interp)
-        self.loss_gen_adv_b = self.dis_b.calc_gen_loss(c_a_interp)
-        self.loss_gen_total = z_style*self.loss_gen_adv_a + (1-z_style)*self.loss_gen_adv_b +\
+        self.loss_flow_gen_adv_a = self.dis_a.calc_gen_loss(c_b_interp)
+        self.loss_flow_gen_adv_b = self.dis_b.calc_gen_loss(c_a_interp)
+        self.loss_flow_gen_total = z_style*self.loss_flow_gen_adv_a + (1-z_style)*self.loss_flow_gen_adv_b +\
                                 hyperparameters['recon_flowing_s_w']*self.latent_s_loss + hyperparameters['recon_flowing_c_w']*self.latent_c_loss
-        self.loss_gen_total.backward()
+        self.loss_flow_gen_total.backward()
         self.gen_opt.step()
 
     def flow_dis_update(self,x_a, x_b,z_style,hyperparameters):
@@ -376,18 +379,18 @@ class MASTER_Trainer(nn.Module):
         c_a, s_a_prime = self.gen.encode(x_a, 1)
         c_b, s_b_prime = self.gen.encode(x_b, 2)
         # style interpolation
-        s_interp = torch.mul((1-z_style),s_a_prime) + torch.mul(z_style,s_b_prime) 
+        s_interp = self.interpolation(z_style,s_a_prime,s_b_prime)
         # decode
         c_b_interp = self.gen.decode(c_b, s_interp,0)
         c_a_interp = self.gen.decode(c_a, s_interp,0)  
         
         # D loss
-        self.loss_dis_a = self.dis_a.calc_dis_loss(c_b_interp.detach(), x_a) +\
+        self.loss_flow_dis_a = self.dis_a.calc_dis_loss(c_b_interp.detach(), x_a) +\
                             self.dis_a.calc_dis_loss(c_a_interp.detach(), x_a) 
-        self.loss_dis_b = self.dis_b.calc_dis_loss(c_b_interp.detach(),x_b) +\
+        self.loss_flow_dis_b = self.dis_b.calc_dis_loss(c_b_interp.detach(),x_b) +\
                             self.dis_b.calc_dis_loss(c_a_interp.detach(),x_b)
-        self.loss_dis_total = (1-z_style)*self.loss_dis_a + z_style*self.loss_dis_b
-        self.loss_dis_total.backward()
+        self.loss_flow_dis_total = (1-z_style)*self.loss_dis_a + z_style*self.loss_dis_b
+        self.loss_flow_dis_total.backward()
         self.dis_opt.step()
 
     

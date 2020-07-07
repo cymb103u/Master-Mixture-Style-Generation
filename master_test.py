@@ -1,6 +1,6 @@
 
 from __future__ import print_function
-from utils import get_config, pytorch03_to_pytorch04,get_all_data_loaders
+from utils import get_config, pytorch03_to_pytorch04,get_all_data_loaders,slerp
 from master_trainer import MUNIT_Trainer,MASTER_Trainer,MASTER_Trainer_v2
 import argparse
 from torch.autograd import Variable
@@ -26,6 +26,7 @@ parser.add_argument('--output_only', action='store_true', help="whether use sync
 parser.add_argument('--output_path', type=str, default='.', help="path for logs, checkpoints, and VGG model weight")
 parser.add_argument('--trainer', type=str, default='MASTER', help="MUNIT|MASTER|MASTER_v2")
 parser.add_argument('--gpu', type=int , default='0')
+parser.add_argument('--interpolation', type='string' ,help='slerp|lerp')
 opts = parser.parse_args()
 cudnn.benchmark = True
 
@@ -73,8 +74,12 @@ with torch.no_grad():
         img_b2a = decode(content_b,style_a,1)
         img_a2b = decode(content_a,style_b,2)
         all_img = torch.cat([img_a.cuda(),img_b.cuda(),img_b2a,img_a2b])
+        z_interp = None
         for z in z_style_params:
-            z_interp = (1-z)*style_a+z*style_b
+            if opt.interpolation =='lerp':
+                z_interp = (1-z)*style_a+z*style_b
+            elif opt.interpolation =='slerp':
+                z_interp = slerp(z,style_a,style_b)
             z_style.append(z_interp)
             if z==0 or z==1:
                 content_a_interp.append(decode(content_a,z_interp,z+1))

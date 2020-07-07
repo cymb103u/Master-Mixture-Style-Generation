@@ -12,9 +12,9 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args":[
-                "--config","configs/style_shoes_label_folder_v2.yaml",
+                "--config","configs/style_shoes_label_folder.yaml",
                 "--trainer","MASTER",
-                "--gpu","1",
+                "--gpu","5",
                 "--port","8097"
             ]
         },
@@ -51,7 +51,8 @@
             "args":[
                 "--trainer", "MASTER",
                 "--config", "configs/style_shoes_label_folder_v2.yaml",
-                "--checkpoint", "outputs/style_shoes_label_folder_v2/checkpoints/gen_00075000.pt"
+                "--checkpoint", "outputs/style_shoes_label_folder_v2/checkpoints/gen_00075000.pt",
+                "--interpolation","slerp"
             ]
         },
     ]
