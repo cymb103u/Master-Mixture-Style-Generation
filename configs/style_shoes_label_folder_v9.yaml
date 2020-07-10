@@ -29,6 +29,7 @@ vgg_w: 0                      # weight of domain-invariant perceptual loss
 recon_flowing_s_w: 1                # weight of flowing style latent reconstruction loss
 recon_flowing_c_w : 1         # weight of flowing content latent reconstruction loss
 
+
 # model options
 gen:
   dom_num: 2                  # domains number

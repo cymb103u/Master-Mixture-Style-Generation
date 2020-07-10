@@ -361,13 +361,15 @@ class MASTER_Trainer(nn.Module):
         c_a_c_inv , c_a_s_interp_inv = self.gen.encode(c_a_interp,0)
 
         # reconstuction  loss
-        self.latent_s_loss = self.recon_criterion(s_interp,c_b_s_interp_inv) + self.recon_criterion(s_interp,c_a_s_interp_inv)
-        self.latent_c_loss = self.recon_criterion(c_a,c_a_c_inv)+ self.recon_criterion(c_b,c_b_c_inv)if hyperparameters['recon_flowing_c_w'] > 0 else 0
+        self.latent_flow_s_loss = self.recon_criterion(s_interp,c_b_s_interp_inv) + self.recon_criterion(s_interp,c_a_s_interp_inv)\
+                                    if hyperparameters['recon_flowing_s_w'] > 0 else 0
+        self.latent_flow_c_loss = self.recon_criterion(c_a,c_a_c_inv)+ self.recon_criterion(c_b,c_b_c_inv)\
+                                    if hyperparameters['recon_flowing_c_w'] > 0 else 0
         # GAN loss
-        self.loss_flow_gen_adv_a = self.dis_a.calc_gen_loss(c_b_interp)
-        self.loss_flow_gen_adv_b = self.dis_b.calc_gen_loss(c_a_interp)
+        self.loss_flow_gen_adv_a = self.dis_a.calc_gen_loss(c_a_interp) + self.dis_a.calc_gen_loss(c_b_interp)
+        self.loss_flow_gen_adv_b = self.dis_b.calc_gen_loss(c_a_interp) + self.dis_b.calc_gen_loss(c_b_interp) 
         self.loss_flow_gen_total = z_style*self.loss_flow_gen_adv_a + (1-z_style)*self.loss_flow_gen_adv_b +\
-                                hyperparameters['recon_flowing_s_w']*self.latent_s_loss + hyperparameters['recon_flowing_c_w']*self.latent_c_loss
+                                hyperparameters['recon_flowing_s_w']*self.latent_flow_s_loss + hyperparameters['recon_flowing_c_w']*self.latent_flow_c_loss
         self.loss_flow_gen_total.backward()
         self.gen_opt.step()
 
