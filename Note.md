@@ -20,11 +20,12 @@
 * style_shoes_label_folder_v8 : 在decode的時候加入domain資訊 + iteration 1000000 +  beta distribution
   * model = MASTER + flowing
 * style_shoes_label_folder_v9 : iteration 500000 + beta distribution(half) + flowing加上content loss (Good) [在241上]
-* style_shoes_label_folder_v10 : iteration 500000 + beta distribution(half) + flowing加上content loss +condition Instance normalization (結果差)
-
+* style_shoes_label_folder_v10 : 跟v9一樣+ lerp + + 更改過後flowing loss
+* style_shoes_label_folder_v11 : iteration 500000 + beta distribution(half) + flowing加上content loss +condition Instance normalization
+  * nlatent 16--> 8 and style encoder (nn.Linear + activation+ weights init)
 * v10 , v11 參考MUNIT p8 style encoder 結論白忙一場
-* style_shoes_label_folder_v12 : iteration 500000 + beta distribution(half) + flowing加上content loss + slerp
-* style_shoes_label_folder_v13 : iteration 1000000 + beta distribution(half) + flowing加上content loss + slerp
+* style_shoes_label_folder_v12 : iteration 500000 + beta distribution(half) + flowing加上content loss + slerp + 更改過後flowing loss + 0.5:loss_flow_latent
+* style_shoes_label_folder_v13 : iteration 1000000 + beta distribution(half) + flowing加上content loss + slerp + 更改過後flowing loss + 0:loss_flow_latent
 ## commmand 
 
 - nohup python master_train.py --config configs/style_shoes_label_folder_v2.yaml --trainer MASTER_v2 --gpu 0 &> v2_log.txt &
