@@ -3,7 +3,7 @@
 * style_shoes_label_folder: 原本模型架構
 * style_shoes_label_folder2: 將原本兩個gen改成一個
 * style_shoes_label_folder_v2 : 一個 gen + cycle  loss*10 (MASTER) // 20/07/07
-
+* style_shoes_label_folder_v11 : 一個 gen + w/o latent loss // 20/07/15
 ## randn --> style encoder
 
 * style_shoes_label_folder_v3 : style code 沒有使用 randn取 (MASTER_v2)
@@ -21,8 +21,7 @@
   * model = MASTER + flowing
 * style_shoes_label_folder_v9 : iteration 500000 + beta distribution(half) + flowing加上content loss (Good) [在241上]
 * style_shoes_label_folder_v10 : iteration 500000 + beta distribution(half) + flowing加上content loss +condition Instance normalization (結果差)
-* style_shoes_label_folder_v11 : iteration 500000 + beta distribution(half) + flowing加上content loss +condition Instance normalization
-  * nlatent 16--> 8 and style encoder (nn.Linear + activation+ weights init)
+
 * v10 , v11 參考MUNIT p8 style encoder 結論白忙一場
 * style_shoes_label_folder_v12 : iteration 500000 + beta distribution(half) + flowing加上content loss + slerp
 * style_shoes_label_folder_v13 : iteration 1000000 + beta distribution(half) + flowing加上content loss + slerp
@@ -33,3 +32,7 @@
 - python master_test.py --trainer MASTER --config configs/style_shoes_label_folder_v4.yaml --checkpoint outputs/style_shoes_label_folder_v4/checkpoints/gen_00500000.pt
 - windows 
   - start/min python master_train.py --config configs/style_shoes_label_folder_v8.yaml --trainer MASTER --gpu 1 --port 8097
+
+## Diversity
+- all_real_test_data : Avg: 0.36281 +/- 0.00323
+-  全部合成去算 LPIPS

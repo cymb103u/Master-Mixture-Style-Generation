@@ -289,12 +289,12 @@ class MASTER_Trainer(nn.Module):
         x_bab = self.gen.decode(c_b_recon, s_b_prime, 2) if hyperparameters['recon_x_cyc_w'] > 0 else None
 
         # reconstruction loss
-        self.loss_gen_recon_x_a = self.recon_criterion(x_a_recon, x_a)
-        self.loss_gen_recon_x_b = self.recon_criterion(x_b_recon, x_b)
-        self.loss_gen_recon_s_a = self.recon_criterion(s_a_recon, s_a)
-        self.loss_gen_recon_s_b = self.recon_criterion(s_b_recon, s_b)
-        self.loss_gen_recon_c_a = self.recon_criterion(c_a_recon, c_a)
-        self.loss_gen_recon_c_b = self.recon_criterion(c_b_recon, c_b)
+        self.loss_gen_recon_x_a = self.recon_criterion(x_a_recon, x_a) if hyperparameters['recon_x_w'] > 0 else 0
+        self.loss_gen_recon_x_b = self.recon_criterion(x_b_recon, x_b) if hyperparameters['recon_x_w'] > 0 else 0
+        self.loss_gen_recon_s_a = self.recon_criterion(s_a_recon, s_a) if hyperparameters['recon_s_w'] > 0 else 0
+        self.loss_gen_recon_s_b = self.recon_criterion(s_b_recon, s_b) if hyperparameters['recon_s_w'] > 0 else 0
+        self.loss_gen_recon_c_a = self.recon_criterion(c_a_recon, c_a) if hyperparameters['recon_c_w'] > 0 else 0
+        self.loss_gen_recon_c_b = self.recon_criterion(c_b_recon, c_b) if hyperparameters['recon_c_w'] > 0 else 0 
         self.loss_gen_cycrecon_x_a = self.recon_criterion(x_aba, x_a) if hyperparameters['recon_x_cyc_w'] > 0 else 0
         self.loss_gen_cycrecon_x_b = self.recon_criterion(x_bab, x_b) if hyperparameters['recon_x_cyc_w'] > 0 else 0
         # GAN loss
@@ -319,7 +319,7 @@ class MASTER_Trainer(nn.Module):
         #  issue loss backward retain_graph=True
         # https://www.itdaan.com/tw/9f77786d0785914ec8f47e6f6662aa85 
         # https://zhuanlan.zhihu.com/p/33378444
-        self.loss_gen_total.backward(retain_graph=True)
+        self.loss_gen_total.backward()
         self.gen_opt.step()
 
     def dis_update(self, x_a, x_b, hyperparameters):
@@ -337,7 +337,7 @@ class MASTER_Trainer(nn.Module):
         self.loss_dis_a = self.dis_a.calc_dis_loss(x_ba.detach(), x_a)
         self.loss_dis_b = self.dis_b.calc_dis_loss(x_ab.detach(), x_b)
         self.loss_dis_total = hyperparameters['gan_w'] * self.loss_dis_a + hyperparameters['gan_w'] * self.loss_dis_b
-        self.loss_dis_total.backward(retain_graph=True)
+        self.loss_dis_total.backward()
         self.dis_opt.step()
 
     def flow_gen_update(self,x_a, x_b,z_style,hyperparameters):
