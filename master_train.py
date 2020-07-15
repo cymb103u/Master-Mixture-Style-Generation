@@ -84,8 +84,8 @@ if __name__ == "__main__":
             with Timer("Elapsed time in update: %f"):
                 # Main training code
                 trainer.dis_update(images_a, images_b, config)
-                trainer.gen_update(images_a, images_b, config)
                 trainer.flow_dis_update(images_a, images_b, z_style, config)
+                trainer.gen_update(images_a, images_b, config)
                 trainer.flow_gen_update(images_a, images_b, z_style, config)
                 torch.cuda.synchronize()
             trainer.update_learning_rate()
