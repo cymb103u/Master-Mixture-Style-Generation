@@ -2,8 +2,11 @@
 
 * style_shoes_label_folder: 原本模型架構
 * style_shoes_label_folder2: 將原本兩個gen改成一個
-* style_shoes_label_folder_v2 : 一個 gen + cycle  loss*10 (MASTER) // 20/07/07
-* style_shoes_label_folder_v11 : 一個 gen + w/o latent loss // 20/07/15
+* style_shoes_label_folder_v2 : 一個 gen + cycle  loss*10 (MASTER) // 20/07/07 [112]
+* style_shoes_label_folder_v11 : 一個 gen + w/o latent loss // 20/07/15 [112]
+* style_shoes_label_folder_v12 :  一個 gen + w/o reconstruction loss   20/07/15 [241]
+
+* style_shoes_label_folder_v9 : iteration 500000 + beta distribution(half) + flowing加上content loss (Good) [在241上]
 ## randn --> style encoder
 
 * style_shoes_label_folder_v3 : style code 沒有使用 randn取 (MASTER_v2)
@@ -21,10 +24,7 @@
   * model = MASTER + flowing
 * style_shoes_label_folder_v9 : iteration 500000 + beta distribution(half) + flowing加上content loss (Good) [在241上]
 * style_shoes_label_folder_v10 : 跟v9一樣+ lerp + + 更改過後flowing loss
-* style_shoes_label_folder_v11 : iteration 500000 + beta distribution(half) + flowing加上content loss +condition Instance normalization
-  * nlatent 16--> 8 and style encoder (nn.Linear + activation+ weights init)
-* v10 , v11 參考MUNIT p8 style encoder 結論白忙一場
-* style_shoes_label_folder_v12 : iteration 500000 + beta distribution(half) + flowing加上content loss + slerp + 更改過後flowing loss + 0.5:loss_flow_latent
+
 * style_shoes_label_folder_v13 : iteration 1000000 + beta distribution(half) + flowing加上content loss + slerp + 更改過後flowing loss + 0:loss_flow_latent
 ## commmand 
 
