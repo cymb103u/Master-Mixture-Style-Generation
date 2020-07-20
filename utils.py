@@ -148,6 +148,17 @@ def prepare_sub_folder(output_directory):
     if not os.path.exists(test_directory):
         print("Creating directory: {}".format(test_directory))
         os.makedirs(test_directory)
+
+    generated_directory = os.path.join(output_directory, 'generated')
+    if not os.path.exists(generated_directory):
+        print("Creating directory: {}".format(generated_directory))
+        os.makedirs(generated_directory)
+
+    interpolation_directory = os.path.join(output_directory, 'interpolation')
+    if not os.path.exists(interpolation_directory):
+        print("Creating directory: {}".format(interpolation_directory))
+        os.makedirs(interpolation_directory) 
+          
     return checkpoint_directory, image_directory
 
 

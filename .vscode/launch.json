@@ -19,30 +19,6 @@
             ]
         },
         {
-            "name": "Python: test_v4.py",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "args":[
-                "--trainer", "MASTER",
-                "--config", "configs/style_shoes_label_folder_v4.yaml",
-                "--checkpoint", "outputs/style_shoes_label_folder_v4/checkpoints/gen_00575000.pt"
-                    ]
-        },
-        {
-            "name": "Python: test_v5.py",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "args":[
-                "--trainer", "MASTER_v2",
-                "--config", "configs/style_shoes_label_folder_v5.yaml",
-                "--checkpoint", "outputs/style_shoes_label_folder_v5/checkpoints/gen_00275000.pt"
-            ]
-        },
-        {
             "name": "Python: test.py",
             "type": "python",
             "request": "launch",
@@ -50,9 +26,12 @@
             "console": "integratedTerminal",
             "args":[
                 "--trainer", "MASTER",
-                "--config", "configs/style_shoes_label_folder_v2.yaml",
-                "--checkpoint", "outputs/style_shoes_label_folder_v2/checkpoints/gen_00125000.pt",
-                "--interpolation","slerp"
+                "--config", "configs/style_shoes_label_folder_v9.yaml",
+                "--checkpoint", "outputs/style_shoes_label_folder_v9/checkpoints/gen_00250000.pt",
+                "--interpolation","lerp",
+                // "--one_img","1,3,5",
+                // "--multi_img","1,2,3"
+
             ]
         },
     ]
