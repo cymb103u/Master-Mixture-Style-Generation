@@ -2,7 +2,7 @@
 
 * style_shoes_label_folder: 原本模型架構
 * style_shoes_label_folder2: 將原本兩個gen改成一個
-* style_shoes_label_folder_v2 : 一個 gen + cycle  loss*10 (MASTER) // 20/07/07 [112]
+* style_shoes_label_folder_v2 : 一個 gen + cycle  loss*10 (MASTER) // 20/07/21 [112]
 * style_shoes_label_folder_v11 : 一個 gen + w/o latent loss // 20/07/15 [112]
 * style_shoes_label_folder_v12 :  一個 gen + w/o reconstruction loss   20/07/15 [241]
 

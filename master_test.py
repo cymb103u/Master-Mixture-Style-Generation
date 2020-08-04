@@ -77,8 +77,10 @@ trainer.eval()
 encode = trainer.gen.encode
 decode = trainer.gen.decode
 # print(trainer)
-
-
+# s_a_num = 0
+# s_a = Variable(torch.randn(len(multi_img),8, 1, 1).cuda())
+# s_b_num = 0
+# s_b = Variable(torch.randn(len(one_img),8, 1, 1).cuda())
 z_style_params = [0,0.2,0.4,0.6,0.8,1]
 z_style = []
 content_a_interp = []
@@ -86,64 +88,66 @@ content_b_interp = []
 if opts.one_img == None and opts.multi_img == None:
     with torch.no_grad():
         for i, img_a in enumerate(test_loader_a):
+            content_a, style_a = encode(img_a.cuda(), 1)
             for j, img_b in enumerate(test_loader_b):
-                content_a, style_a = encode(img_a.cuda(), 1)
                 content_b, style_b = encode(img_b.cuda(), 2)
                 img_b2a = decode(content_b,style_a,1)
                 img_a2b = decode(content_a,style_b,2)
                 all_img = torch.cat([img_a.cuda(),img_b.cuda(),img_b2a,img_a2b])
-                z_interp = None
-                for z in z_style_params:
-                    z_interp = interpolation(z,style_a,style_b)
-                    z_style.append(z_interp)
-                    if z==0 or z==1:
-                        content_a_interp.append(decode(content_a,z_interp,z+1))
-                        content_b_interp.append(decode(content_b,z_interp,z+1))
-                    else:
-                        content_a_interp.append(decode(content_a,z_interp,0))
-                        content_b_interp.append(decode(content_b,z_interp,0))
-                # print(z_style)
-                content_a_interp =torch.cat(content_a_interp)
-                content_b_interp =torch.cat(content_b_interp)
+                # z_interp = None
+                # for z in z_style_params:
+                #     z_interp = interpolation(z,style_a,style_b)
+                #     z_style.append(z_interp)
+                #     if z==0 or z==1:
+                #         content_a_interp.append(decode(content_a,z_interp,z+1))
+                #         content_b_interp.append(decode(content_b,z_interp,z+1))
+                #     else:
+                #         content_a_interp.append(decode(content_a,z_interp,0))
+                #         content_b_interp.append(decode(content_b,z_interp,0))
+                # # print(z_style)
+                # content_a_interp =torch.cat(content_a_interp)
+                # content_b_interp =torch.cat(content_b_interp)
                 
                 # padding 代表間隔距離 
-                # vutils.save_image(img_b2a,f'outputs/{model_name}/generated/b2a/style_a{i:03d}_content_b{j:03d}.jpg',nrow=1,padding=0,normalize=True)
-                # vutils.save_image(img_a2b,f'outputs/{model_name}/generated/a2b/style_b{j:03d}_content_a{i:03d}.jpg',nrow=1,padding=0,normalize=True)
-                vutils.save_image(all_img,f'outputs/{model_name}/test/disentangle_a{i:03d}_b{j:03d}.jpg',nrow=1,padding=0,normalize=True)
-                vutils.save_image(content_a_interp,f'outputs/{model_name}/interpolation/content_a_interp_a{i:03d}_b{j:03d}.jpg',padding=0,normalize=True)
-                vutils.save_image(content_b_interp,f'outputs/{model_name}/interpolation/content_b_interp_a{i:03d}_b{j:03d}.jpg',padding=0,normalize=True)
+                vutils.save_image(img_b2a,f'outputs/{model_name}/generated/b2a/style_a{i:03d}_content_b{j:03d}.jpg',nrow=1,padding=0,normalize=True)
+                vutils.save_image(img_a2b,f'outputs/{model_name}/generated/a2b/style_b{j:03d}_content_a{i:03d}.jpg',nrow=1,padding=0,normalize=True)
+                # vutils.save_image(all_img,f'outputs/{model_name}/test/disentangle_a{i:03d}_b{j:03d}.jpg',nrow=1,padding=0,normalize=True)
+                # vutils.save_image(content_a_interp,f'outputs/{model_name}/interpolation/content_a_interp_a{i:03d}_b{j:03d}.jpg',padding=0,normalize=True)
+                # vutils.save_image(content_b_interp,f'outputs/{model_name}/interpolation/content_b_interp_a{i:03d}_b{j:03d}.jpg',padding=0,normalize=True)
                 content_a_interp = []
                 content_b_interp = []
 elif opts.one_img != None and opts.multi_img != None:
     with torch.no_grad():
         for i, img_a in enumerate(test_loader_a):
             if i in one_img:
+                s_a_num = 0
+                s_b_num = 0
+                content_a, style_a = encode(img_a.cuda(), 1)
                 for j, img_b in enumerate(test_loader_b):
                     if j in multi_img:
-                        content_a, style_a = encode(img_a.cuda(), 1)
                         content_b, style_b = encode(img_b.cuda(), 2)
-                        img_b2a = decode(content_b,style_a,1)
-                        img_a2b = decode(content_a,style_b,2)
-                        all_img = torch.cat([img_a.cuda(),img_b.cuda(),img_b2a,img_a2b])
-                        z_interp = None
-                        for z in z_style_params:
-                            z_interp = interpolation(z,style_a,style_b)
-                            z_style.append(z_interp)
-                            if z==0 or z==1:
-                                content_a_interp.append(decode(content_a,z_interp,z+1))
-                                content_b_interp.append(decode(content_b,z_interp,z+1))
-                            else:
-                                content_a_interp.append(decode(content_a,z_interp,0))
-                                content_b_interp.append(decode(content_b,z_interp,0))
-                        # print(z_style)
-                        content_a_interp =torch.cat(content_a_interp)
-                        content_b_interp =torch.cat(content_b_interp)
+                        # img_b2a = decode(content_b,style_a, 1)
+                        # img_a2b = decode(content_a,style_b, 2)
+                        # all_img = torch.cat([img_a.cuda(),img_b.cuda(),img_b2a,img_a2b])
+                        # z_interp = None
+                        # for z in z_style_params:
+                        #     z_interp = interpolation(z,style_a,style_b)
+                        #     z_style.append(z_interp)
+                        #     if z==0 or z==1:
+                        #         content_a_interp.append(decode(content_a,z_interp,z+1))
+                        #         content_b_interp.append(decode(content_b,z_interp,z+1))
+                        #     else:
+                        #         content_a_interp.append(decode(content_a,z_interp,0))
+                        #         content_b_interp.append(decode(content_b,z_interp,0))
+                        # # print(z_style)
+                        # content_a_interp =torch.cat(content_a_interp)
+                        # content_b_interp =torch.cat(content_b_interp)
                         
                         # padding 代表間隔距離 
-                        # vutils.save_image(img_b2a,f'outputs/{model_name}/generated/b2a/style_a{i:03d}_content_b{j:03d}.jpg',nrow=1,padding=0,normalize=True)
-                        # vutils.save_image(img_a2b,f'outputs/{model_name}/generated/a2b/style_b{j:03d}_content_a{i:03d}.jpg',nrow=1,padding=0,normalize=True)
-                        vutils.save_image(all_img,f'outputs/{model_name}/test/disentangle_a{i:03d}_b{j:03d}.jpg',nrow=1,padding=0,normalize=True)
-                        vutils.save_image(content_a_interp,f'outputs/{model_name}/interpolation/content_a_interp_a{i:03d}_b{j:03d}.jpg',padding=0,normalize=True)
-                        vutils.save_image(content_b_interp,f'outputs/{model_name}/interpolation/content_b_interp_a{i:03d}_b{j:03d}.jpg',padding=0,normalize=True)
+                        vutils.save_image(img_b2a,f'outputs/{model_name}/generated/b2a/style_a{i:03d}_content_b{j:03d}.jpg',nrow=1,padding=0,normalize=True)
+                        vutils.save_image(img_a2b,f'outputs/{model_name}/generated/a2b/style_b{j:03d}_content_a{i:03d}.jpg',nrow=1,padding=0,normalize=True)
+                        # vutils.save_image(all_img,f'outputs/{model_name}/test/disentangle_a{i:03d}_b{j:03d}.jpg',nrow=1,padding=0,normalize=True)
+                        # vutils.save_image(content_a_interp,f'outputs/{model_name}/interpolation/content_a_interp_a{i:03d}_b{j:03d}.jpg',padding=0,normalize=True)
+                        # vutils.save_image(content_b_interp,f'outputs/{model_name}/interpolation/content_b_interp_a{i:03d}_b{j:03d}.jpg',padding=0,normalize=True)
                         content_a_interp = []
                         content_b_interp = []
