@@ -6,7 +6,7 @@
 * style_shoes_label_folder_v11 : 一個 gen + w/o latent loss // 20/07/15 [112]
 * style_shoes_label_folder_v12 :  一個 gen + w/o reconstruction loss   20/07/15 [241]
 
-* style_shoes_label_folder_v9 : iteration 500000 + beta distribution(half) + flowing加上content loss (Good) [在241上]
+* style_shoes_label_folder_v9 : iteration 500000 + beta distribution(half) + flowing加上content loss (Good) [241]
 ## randn --> style encoder
 
 * style_shoes_label_folder_v3 : style code 沒有使用 randn取 (MASTER_v2)
