@@ -12,9 +12,9 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args":[
-                "--config","configs/style_shoes_label_folder.yaml",
+                "--config","configs/style_shoes_label_folder_v13.yaml",
                 "--trainer","MASTER",
-                "--gpu","5",
+                "--gpu","1",
                 "--port","8097"
             ]
         },

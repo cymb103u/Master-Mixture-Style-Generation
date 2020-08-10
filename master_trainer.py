@@ -1,7 +1,3 @@
-"""
-Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
-Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
-"""
 from master_networks import AdaINGen, MsImageDis, VAEGen,Master_Gen
 from utils import weights_init, get_model_list, vgg_preprocess, load_vgg16,\
      get_scheduler,get_config,slerp,lerp
@@ -361,16 +357,16 @@ class MASTER_Trainer(nn.Module):
         c_a_c_inv , c_a_s_interp_inv = self.gen.encode(c_a_interp,0)
 
         # reconstuction  loss
-        self.latent_flow_s_loss = self.recon_criterion(s_interp,c_b_s_interp_inv) + self.recon_criterion(s_interp,c_a_s_interp_inv)\
+        self.latent_s_loss = self.recon_criterion(s_interp,c_b_s_interp_inv) + self.recon_criterion(s_interp,c_a_s_interp_inv)\
                                     if hyperparameters['recon_flowing_s_w'] > 0 else 0
-        self.latent_flow_c_loss = self.recon_criterion(c_a,c_a_c_inv)+ self.recon_criterion(c_b,c_b_c_inv)\
+        self.latent_c_loss = self.recon_criterion(c_a,c_a_c_inv) + self.recon_criterion(c_b,c_b_c_inv)\
                                     if hyperparameters['recon_flowing_c_w'] > 0 else 0
         # GAN loss
-        self.loss_flow_gen_adv_a = self.dis_a.calc_gen_loss(c_a_interp) + self.dis_a.calc_gen_loss(c_b_interp)
-        self.loss_flow_gen_adv_b = self.dis_b.calc_gen_loss(c_a_interp) + self.dis_b.calc_gen_loss(c_b_interp) 
-        self.loss_flow_gen_total = z_style*self.loss_flow_gen_adv_a + (1-z_style)*self.loss_flow_gen_adv_b +\
-                                hyperparameters['recon_flowing_s_w']*self.latent_flow_s_loss + hyperparameters['recon_flowing_c_w']*self.latent_flow_c_loss
-        self.loss_flow_gen_total.backward()
+        self.loss_gen_adv_a = self.dis_a.calc_gen_loss(c_a_interp) + self.dis_a.calc_gen_loss(c_b_interp)
+        self.loss_gen_adv_b = self.dis_b.calc_gen_loss(c_a_interp) + self.dis_b.calc_gen_loss(c_b_interp) 
+        self.loss_gen_total = z_style*self.loss_gen_adv_a + (1-z_style)*self.loss_gen_adv_b +\
+                                hyperparameters['recon_flowing_s_w']*self.latent_s_loss + hyperparameters['recon_flowing_c_w']*self.latent_c_loss
+        self.loss_gen_total.backward()
         self.gen_opt.step()
 
     def flow_dis_update(self,x_a, x_b,z_style,hyperparameters):
@@ -387,12 +383,12 @@ class MASTER_Trainer(nn.Module):
         c_a_interp = self.gen.decode(c_a, s_interp,0)  
         
         # D loss
-        self.loss_flow_dis_a = self.dis_a.calc_dis_loss(c_b_interp.detach(), x_a) +\
+        self.loss_dis_a = self.dis_a.calc_dis_loss(c_b_interp.detach(), x_a) +\
                             self.dis_a.calc_dis_loss(c_a_interp.detach(), x_a) 
-        self.loss_flow_dis_b = self.dis_b.calc_dis_loss(c_b_interp.detach(),x_b) +\
+        self.loss_dis_b = self.dis_b.calc_dis_loss(c_b_interp.detach(),x_b) +\
                             self.dis_b.calc_dis_loss(c_a_interp.detach(),x_b)
-        self.loss_flow_dis_total = (1-z_style)*self.loss_dis_a + z_style*self.loss_dis_b
-        self.loss_flow_dis_total.backward()
+        self.loss_dis_total = (1-z_style)*self.loss_dis_a + z_style*self.loss_dis_b
+        self.loss_dis_total.backward()
         self.dis_opt.step()
 
     

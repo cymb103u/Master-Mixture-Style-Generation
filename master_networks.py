@@ -1,7 +1,3 @@
-"""
-Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
-Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
-"""
 from utils import get_config,domain_code_produce_encoder,domain_code_produce_decoder
 import argparse
 from torch import nn
