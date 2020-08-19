@@ -38,3 +38,7 @@
 ## Diversity
 - all_real_test_data : Avg: 0.36281 +/- 0.00323
 -  全部合成去算 LPIPS
+
+## visdom 監控
+- ssh -L 127.0.0.1:6006:127.0.0.1:6006 cymb103u@140.123.104.112
+ 

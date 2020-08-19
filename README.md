@@ -1,61 +1,36 @@
-[![License CC BY-NC-SA 4.0](https://img.shields.io/badge/license-CC4.0-blue.svg)](https://raw.githubusercontent.com/NVIDIA/FastPhotoStyle/master/LICENSE.md)
-![Python 2.7](https://img.shields.io/badge/python-2.7-green.svg)
 ![Python 3.6](https://img.shields.io/badge/python-3.6-green.svg)
-## MUNIT: Multimodal UNsupervised Image-to-image Translation
-
-### License
-
-Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
-Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode). 
+## Domain Flow for Mixture Style Generation on Latent Space Exploration and Control
+## 流域應用於隱空間探索與控制完成混合風格生成
+----------------------------------------------------------------------------------------
+## Code 參考
+參考 [MUNIT: Multimodal UNsupervised Image-to-image Translation](https://github.com/NVlabs/MUNIT) 和
+[DLOW-Pytorch](https://github.com/Euiyeon-Kim/DLOW-Pytorch)
 
 ### Code usage
 
 Please check out the [user manual page](USAGE.md).
 
-### Paper
+### Concept 
+![](figures/Topic_Concept.png)
 
-[Xun Huang](http://www.cs.cornell.edu/~xhuang/), [Ming-Yu Liu](http://mingyuliu.net/), [Serge Belongie](https://vision.cornell.edu/se3/people/serge-belongie/), [Jan Kautz](http://jankautz.com/), "[Multimodal Unsupervised Image-to-Image Translation](https://arxiv.org/abs/1804.04732)", ECCV 2018
+### System Framework
+![](figures/System_Framework.png)
+總共分為兩個部分 Disentangle 和 Domain Flowing。
 
-### Results Video
-[![](results/video.jpg)](https://youtu.be/ab64TWzWn40)
+### Disentangle Visualization
 
-### Edges to Shoes/handbags Translation
+#### multiple2one
+![](figures/experiment-multiple2one.png)
+#### one2multiple
+![](figures/experiment-one2multiple.png)
 
-![](results/edges2shoes_handbags.jpg)
+#### noise sample
+![](figures/experiment-Noise_Sample.png)
 
-### Animal Image Translation
+### Domain Flowing Visualization
 
-![](results/animal.jpg)
+![](figures/experiment-Domain_Flowing.png)
 
-### Street Scene Translation
 
-![](results/street.jpg)
-
-### Yosemite Summer to Winter Translation (HD)
-
-![](results/summer2winter_yosemite.jpg)
-
-### Example-guided Image Translation
-
-![](results/example_guided.jpg)
-
-### Other Implementations
-
-[MUNIT-Tensorflow](https://github.com/taki0112/MUNIT-Tensorflow) by [Junho Kim](https://github.com/taki0112)
-
-[MUNIT-keras](https://github.com/shaoanlu/MUNIT-keras) by [shaoanlu](https://github.com/shaoanlu)
-
-### Citation
-
-If you find this code useful for your research, please cite our paper:
-
-```
-@inproceedings{huang2018munit,
-  title={Multimodal Unsupervised Image-to-image Translation},
-  author={Huang, Xun and Liu, Ming-Yu and Belongie, Serge and Kautz, Jan},
-  booktitle={ECCV},
-  year={2018}
-}
-```
 
 
