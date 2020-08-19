@@ -22,16 +22,20 @@ pip install tensorboard tensorboardX;
 - Note.md : 實驗記錄的部分 & 訓練command
   
 #### Training
-1. Download the dataset you want to use. For example, you can use the edges2shoes dataset provided by [Zhu et al.](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)
+1. Prepare dataset
+   + 將 dataset 分成 trainA / trainB 和 testA/testB，放到 `datasets`
 
-2. Setup the yaml file. Check out `configs/edges2handbags_folder.yaml` for folder-based dataset organization. Change the `data_root` field to the path of your downloaded dataset. For list-based dataset organization, check out `configs/edges2handbags_list.yaml`
+2. Setup the yaml file. 
+   + Check out `configs/style_shoes_label_floder_OO.yaml` for folder-based dataset organization. 
 
-3. Start training
+3. 開啟 Visdom  `python -m visdom.server`
+   
+4. Start training
     ```
-    python train.py --config configs/edges2handbags_folder.yaml
+    python master_train.py --config configs/style_shoes_label_folder_OO.yaml --trainer MASTER
     ```
     
-4. Intermediate image outputs and model binary files are stored in `outputs/edges2handbags_folder`
+5. Intermediate image outputs and model binary files are stored in `outputs/style_shoes_label_floder_OO`
 
 
 #### Testing 

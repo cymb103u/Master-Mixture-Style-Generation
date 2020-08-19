@@ -29,16 +29,16 @@
 * style_shoes_label_folder_v13 : 重現v9
 ## commmand 
 
-- nohup python master_train.py --config configs/style_shoes_label_folder_v2.yaml --trainer MASTER_v2 --gpu 0 &> v2_log.txt &
+- nohup python master_train.py --config configs/style_shoes_label_folder_v2.yaml --trainer MASTER --gpu 0 &> v2_log.txt &
 - nohup python master_train.py --config configs/style_shoes_label_folder_v7.yaml --trainer MASTER --gpu 1 --port 8000 &> v7_log.txt &
 - python master_test.py --trainer MASTER --config configs/style_shoes_label_folder_v4.yaml --checkpoint outputs/style_shoes_label_folder_v4/checkpoints/gen_00500000.pt
 - windows 
   - start/min python master_train.py --config configs/style_shoes_label_folder_v8.yaml --trainer MASTER --gpu 1 --port 8097
 
-## Diversity
-- all_real_test_data : Avg: 0.36281 +/- 0.00323
--  全部合成去算 LPIPS
-
 ## visdom 監控
 - ssh -L 127.0.0.1:6006:127.0.0.1:6006 cymb103u@140.123.104.112
  
+
+## Diversity
+- all_real_test_data : Avg: 0.36281 +/- 0.00323
+-  全部合成去算 LPIPS

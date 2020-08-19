@@ -1,7 +1,7 @@
 ![Python 3.6](https://img.shields.io/badge/python-3.6-green.svg)
-## Domain Flow for Mixture Style Generation on Latent Space Exploration and Control
+# Domain Flow for Mixture Style Generation on Latent Space Exploration and Control
 ## 流域應用於隱空間探索與控制完成混合風格生成
-----------------------------------------------------------------------------------------
+
 ## Code 參考
 參考 [MUNIT: Multimodal UNsupervised Image-to-image Translation](https://github.com/NVlabs/MUNIT) 和
 [DLOW-Pytorch](https://github.com/Euiyeon-Kim/DLOW-Pytorch)
