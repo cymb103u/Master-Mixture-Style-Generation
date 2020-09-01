@@ -5,7 +5,7 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 # from torch.utils.serialization import load_lua
 from numpy.linalg.linalg import norm
 from torch.utils.data import DataLoader
-from networks import Vgg16
+# from networks import Vgg16
 from torch.autograd import Variable
 from torch.optim import lr_scheduler
 from torchvision import transforms
@@ -15,7 +15,7 @@ import torch
 import torch.nn as nn
 import os
 import math
-import torchvision.utils as vutils
+import torchvision.utils as vutil
 import yaml
 import numpy as np
 import torch.nn.init as init
@@ -51,6 +51,8 @@ import matplotlib.pyplot as plt
 # visualize_results_to_video
 # get_domainess
 # get_domainess_pdf
+
+
 def get_all_data_loaders(conf):
     batch_size = conf['batch_size']
     num_workers = conf['num_workers']
@@ -64,49 +66,58 @@ def get_all_data_loaders(conf):
 
     if 'data_root' in conf:
         train_loader_a = get_data_loader_folder(os.path.join(conf['data_root'], 'trainA'), batch_size, True,
-                                              new_size_a, height, width, num_workers, True)
+                                                new_size_a, height, width, num_workers, True)
         test_loader_a = get_data_loader_folder(os.path.join(conf['data_root'], 'testA'), batch_size, False,
-                                             new_size_a, new_size_a, new_size_a, num_workers, True)
+                                               new_size_a, new_size_a, new_size_a, num_workers, True)
         train_loader_b = get_data_loader_folder(os.path.join(conf['data_root'], 'trainB'), batch_size, True,
-                                              new_size_b, height, width, num_workers, True)
+                                                new_size_b, height, width, num_workers, True)
         test_loader_b = get_data_loader_folder(os.path.join(conf['data_root'], 'testB'), batch_size, False,
-                                             new_size_b, new_size_b, new_size_b, num_workers, True)
+                                               new_size_b, new_size_b, new_size_b, num_workers, True)
     else:
         train_loader_a = get_data_loader_list(conf['data_folder_train_a'], conf['data_list_train_a'], batch_size, True,
-                                                new_size_a, height, width, num_workers, True)
+                                              new_size_a, height, width, num_workers, True)
         test_loader_a = get_data_loader_list(conf['data_folder_test_a'], conf['data_list_test_a'], batch_size, False,
-                                                new_size_a, new_size_a, new_size_a, num_workers, True)
+                                             new_size_a, new_size_a, new_size_a, num_workers, True)
         train_loader_b = get_data_loader_list(conf['data_folder_train_b'], conf['data_list_train_b'], batch_size, True,
-                                                new_size_b, height, width, num_workers, True)
+                                              new_size_b, height, width, num_workers, True)
         test_loader_b = get_data_loader_list(conf['data_folder_test_b'], conf['data_list_test_b'], batch_size, False,
-                                                new_size_b, new_size_b, new_size_b, num_workers, True)
+                                             new_size_b, new_size_b, new_size_b, num_workers, True)
     return train_loader_a, train_loader_b, test_loader_a, test_loader_b
 
 
 def get_data_loader_list(root, file_list, batch_size, train, new_size=None,
-                           height=256, width=256, num_workers=4, crop=True):
+                         height=256, width=256, num_workers=4, crop=True):
     transform_list = [transforms.ToTensor(),
                       transforms.Normalize((0.5, 0.5, 0.5),
                                            (0.5, 0.5, 0.5))]
-    transform_list = [transforms.RandomCrop((height, width))] + transform_list if crop else transform_list
-    transform_list = [transforms.Resize(new_size)] + transform_list if new_size is not None else transform_list
-    transform_list = [transforms.RandomHorizontalFlip()] + transform_list if train else transform_list
+    transform_list = [transforms.RandomCrop(
+        (height, width))] + transform_list if crop else transform_list
+    transform_list = [transforms.Resize(
+        new_size)] + transform_list if new_size is not None else transform_list
+    transform_list = [transforms.RandomHorizontalFlip()] + \
+        transform_list if train else transform_list
     transform = transforms.Compose(transform_list)
     dataset = ImageFilelist(root, file_list, transform=transform)
-    loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=train, drop_last=True, num_workers=num_workers)
+    loader = DataLoader(dataset=dataset, batch_size=batch_size,
+                        shuffle=train, drop_last=True, num_workers=num_workers)
     return loader
+
 
 def get_data_loader_folder(input_folder, batch_size, train, new_size=None,
                            height=256, width=256, num_workers=4, crop=True):
     transform_list = [transforms.ToTensor(),
                       transforms.Normalize((0.5, 0.5, 0.5),
                                            (0.5, 0.5, 0.5))]
-    transform_list = [transforms.RandomCrop((height, width))] + transform_list if crop else transform_list
-    transform_list = [transforms.Resize(new_size)] + transform_list if new_size is not None else transform_list
-    transform_list = [transforms.RandomHorizontalFlip()] + transform_list if train else transform_list
+    transform_list = [transforms.RandomCrop(
+        (height, width))] + transform_list if crop else transform_list
+    transform_list = [transforms.Resize(
+        new_size)] + transform_list if new_size is not None else transform_list
+    transform_list = [transforms.RandomHorizontalFlip()] + \
+        transform_list if train else transform_list
     transform = transforms.Compose(transform_list)
     dataset = ImageFolder(input_folder, transform=transform)
-    loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=train, drop_last=True, num_workers=num_workers)
+    loader = DataLoader(dataset=dataset, batch_size=batch_size,
+                        shuffle=train, drop_last=True, num_workers=num_workers)
     return loader
 
 
@@ -116,23 +127,28 @@ def get_config(config):
 
 
 def eformat(f, prec):
-    s = "%.*e"%(prec, f)
+    s = "%.*e" % (prec, f)
     mantissa, exp = s.split('e')
     # add 1 to digits as 1 is taken by sign +/-
-    return "%se%d"%(mantissa, int(exp))
+    return "%se%d" % (mantissa, int(exp))
 
 
 def __write_images(image_outputs, display_image_num, file_name):
-    image_outputs = [images.expand(-1, 3, -1, -1) for images in image_outputs] # expand gray-scale images to 3 channels
-    image_tensor = torch.cat([images[:display_image_num] for images in image_outputs], 0)
-    image_grid = vutils.make_grid(image_tensor.data, nrow=display_image_num, padding=0, normalize=True)
+    # expand gray-scale images to 3 channels
+    image_outputs = [images.expand(-1, 3, -1, -1) for images in image_outputs]
+    image_tensor = torch.cat([images[:display_image_num]
+                              for images in image_outputs], 0)
+    image_grid = vutils.make_grid(
+        image_tensor.data, nrow=display_image_num, padding=0, normalize=True)
     vutils.save_image(image_grid, file_name, nrow=1)
 
 
 def write_2images(image_outputs, display_image_num, image_directory, postfix):
     n = len(image_outputs)
-    __write_images(image_outputs[0:n//2], display_image_num, '%s/gen_a2b_%s.jpg' % (image_directory, postfix))
-    __write_images(image_outputs[n//2:n], display_image_num, '%s/gen_b2a_%s.jpg' % (image_directory, postfix))
+    __write_images(image_outputs[0:n//2], display_image_num,
+                   '%s/gen_a2b_%s.jpg' % (image_directory, postfix))
+    __write_images(image_outputs[n//2:n], display_image_num,
+                   '%s/gen_b2a_%s.jpg' % (image_directory, postfix))
 
 
 def prepare_sub_folder(output_directory):
@@ -157,13 +173,14 @@ def prepare_sub_folder(output_directory):
     interpolation_directory = os.path.join(output_directory, 'interpolation')
     if not os.path.exists(interpolation_directory):
         print("Creating directory: {}".format(interpolation_directory))
-        os.makedirs(interpolation_directory) 
-          
+        os.makedirs(interpolation_directory)
+
     return checkpoint_directory, image_directory
 
 
 def write_one_row_html(html_file, iterations, img_filename, all_size):
-    html_file.write("<h3>iteration [%d] (%s)</h3>" % (iterations,img_filename.split('/')[-1]))
+    html_file.write("<h3>iteration [%d] (%s)</h3>" %
+                    (iterations, img_filename.split('/')[-1]))
     html_file.write("""
         <p><a href="%s">
           <img src="%s" style="width:%dpx">
@@ -185,20 +202,26 @@ def write_html(filename, iterations, image_save_iterations, image_directory, all
     <body>
     ''' % os.path.basename(filename))
     html_file.write("<h3>current</h3>")
-    write_one_row_html(html_file, iterations, '%s/gen_a2b_train_current.jpg' % (image_directory), all_size)
-    write_one_row_html(html_file, iterations, '%s/gen_b2a_train_current.jpg' % (image_directory), all_size)
+    write_one_row_html(html_file, iterations,
+                       '%s/gen_a2b_train_current.jpg' % (image_directory), all_size)
+    write_one_row_html(html_file, iterations,
+                       '%s/gen_b2a_train_current.jpg' % (image_directory), all_size)
     for j in range(iterations, image_save_iterations-1, -1):
         if j % image_save_iterations == 0:
-            write_one_row_html(html_file, j, '%s/gen_a2b_test_%08d.jpg' % (image_directory, j), all_size)
-            write_one_row_html(html_file, j, '%s/gen_b2a_test_%08d.jpg' % (image_directory, j), all_size)
-            write_one_row_html(html_file, j, '%s/gen_a2b_train_%08d.jpg' % (image_directory, j), all_size)
-            write_one_row_html(html_file, j, '%s/gen_b2a_train_%08d.jpg' % (image_directory, j), all_size)
+            write_one_row_html(
+                html_file, j, '%s/gen_a2b_test_%08d.jpg' % (image_directory, j), all_size)
+            write_one_row_html(
+                html_file, j, '%s/gen_b2a_test_%08d.jpg' % (image_directory, j), all_size)
+            write_one_row_html(
+                html_file, j, '%s/gen_a2b_train_%08d.jpg' % (image_directory, j), all_size)
+            write_one_row_html(
+                html_file, j, '%s/gen_b2a_train_%08d.jpg' % (image_directory, j), all_size)
     html_file.write("</body></html>")
     html_file.close()
 
 
 def write_loss(iterations, trainer, train_writer):
-    members = [attr for attr in dir(trainer) \
+    members = [attr for attr in dir(trainer)
                if not callable(getattr(trainer, attr)) and not attr.startswith("__") and ('loss' in attr or 'grad' in attr or 'nwd' in attr)]
     for m in members:
         train_writer.add_scalar(m, getattr(trainer, m), iterations + 1)
@@ -207,14 +230,18 @@ def write_loss(iterations, trainer, train_writer):
 class lerp(nn.Module):
     def __init__(self):
         super(lerp, self).__init__()
-    def forward(self, val,low,high):
-        return torch.mul((1-val),low) +torch.mul(val,high) 
-        
+
+    def forward(self, val, low, high):
+        return torch.mul((1-val), low) + torch.mul(val, high)
+
+
 class slerp(nn.Module):
     def __init__(self):
         super(slerp, self).__init__()
+
     def forward(self, val, low, high):
-        omega = torch.acos(torch.dot(low.view(-1)/ torch.norm(low.view(-1)), high.view(-1) / torch.norm(high.view(-1))))
+        omega = torch.acos(torch.dot(
+            low.view(-1) / torch.norm(low.view(-1)), high.view(-1) / torch.norm(high.view(-1))))
         so = torch.sin(omega)
         return torch.sin((1.0 - val) * omega) / so * low + torch.sin(val * omega) / so * high
 
@@ -235,7 +262,6 @@ class slerp(nn.Module):
 #     omega = torch.acos(torch.dot(low.view(-1)/ torch.norm(low.view(-1)), high.view(-1) / torch.norm(high.view(-1))))
 #     so = torch.sin(omega)
 #     return torch.sin((1.0 - val) * omega) / so * low + torch.sin(val * omega) / so * high
-    
 
 
 def get_slerp_interp(nb_latents, nb_interp, z_dim):
@@ -275,7 +301,8 @@ def load_vgg16(model_dir):
         os.mkdir(model_dir)
     if not os.path.exists(os.path.join(model_dir, 'vgg16.weight')):
         if not os.path.exists(os.path.join(model_dir, 'vgg16.t7')):
-            os.system('wget https://www.dropbox.com/s/76l3rt4kyi3s8x7/vgg16.t7?dl=1 -O ' + os.path.join(model_dir, 'vgg16.t7'))
+            os.system('wget https://www.dropbox.com/s/76l3rt4kyi3s8x7/vgg16.t7?dl=1 -O ' +
+                      os.path.join(model_dir, 'vgg16.t7'))
         vgglua = load_lua(os.path.join(model_dir, 'vgg16.t7'))
         vgg = Vgg16()
         for (src, dst) in zip(vgglua.parameters()[0], vgg.parameters()):
@@ -284,6 +311,7 @@ def load_vgg16(model_dir):
     vgg = Vgg16()
     vgg.load_state_dict(torch.load(os.path.join(model_dir, 'vgg16.weight')))
     return vgg
+
 
 def load_inception(model_path):
     state_dict = torch.load(model_path)
@@ -296,22 +324,23 @@ def load_inception(model_path):
         param.requires_grad = False
     return model
 
+
 def vgg_preprocess(batch):
     tensortype = type(batch.data)
-    (r, g, b) = torch.chunk(batch, 3, dim = 1)
-    batch = torch.cat((b, g, r), dim = 1) # convert RGB to BGR
-    batch = (batch + 1) * 255 * 0.5 # [-1, 1] -> [0, 255]
+    (r, g, b) = torch.chunk(batch, 3, dim=1)
+    batch = torch.cat((b, g, r), dim=1)  # convert RGB to BGR
+    batch = (batch + 1) * 255 * 0.5  # [-1, 1] -> [0, 255]
     mean = tensortype(batch.data.size()).cuda()
     mean[:, 0, :, :] = 103.939
     mean[:, 1, :, :] = 116.779
     mean[:, 2, :, :] = 123.680
-    batch = batch.sub(Variable(mean)) # subtract mean
+    batch = batch.sub(Variable(mean))  # subtract mean
     return batch
 
 
 def get_scheduler(optimizer, hyperparameters, iterations=-1):
     if 'lr_policy' not in hyperparameters or hyperparameters['lr_policy'] == 'constant':
-        scheduler = None # constant scheduler
+        scheduler = None  # constant scheduler
     elif hyperparameters['lr_policy'] == 'step':
         scheduler = lr_scheduler.StepLR(optimizer, step_size=hyperparameters['step_size'],
                                         gamma=hyperparameters['gamma'], last_epoch=iterations)
@@ -438,71 +467,80 @@ def pytorch03_to_pytorch04(state_dict_base, trainer_name):
 
 # for example  domain=2
 # dimension (batch_size, dom_num, img_size, img_size)
-# output data will be  [all_1, 0 is 1 , 1 is 1] 
+# output data will be  [all_1, 0 is 1 , 1 is 1]
+
+
 def domain_code_produce_encoder(batch_size, img_size, dom_num):
     # domain num : the number of domain
-    # 0 : for mixer domain 
-    dom_codes = [torch.ones(batch_size,dom_num,img_size,img_size).cuda()]
+    # 0 : for mixer domain
+    dom_codes = [torch.ones(batch_size, dom_num, img_size, img_size).cuda()]
     for i in range(dom_num):
-        dom_code = torch.zeros( batch_size, dom_num, img_size, img_size)
-        dom_code[:,i,:,:] = torch.ones(1,img_size,img_size)
+        dom_code = torch.zeros(batch_size, dom_num, img_size, img_size)
+        dom_code[:, i, :, :] = torch.ones(1, img_size, img_size)
         dom_codes.append(dom_code.cuda())
     return dom_codes
 
-def domain_code_produce_decoder(batch_size,dom_num):
-    dom_codes =[torch.ones(batch_size,dom_num,1,1).cuda()] 
+
+def domain_code_produce_decoder(batch_size, dom_num):
+    dom_codes = [torch.ones(batch_size, dom_num, 1, 1).cuda()]
     for i in range(dom_num):
-        dom_code = torch.zeros(batch_size,dom_num,1,1)
-        dom_code[:,i,:,:] =torch.ones(1)
+        dom_code = torch.zeros(batch_size, dom_num, 1, 1)
+        dom_code[:, i, :, :] = torch.ones(1)
         dom_codes.append(dom_code.cuda())
     return dom_codes
 
-def visualize_results_to_video(input_directory,output_directory,fps=5):
-    case =['a2b_train','a2b_test','b2a_train','b2a_test']
+
+def visualize_results_to_video(input_directory, output_directory, fps=5):
+    case = ['a2b_train', 'a2b_test', 'b2a_train', 'b2a_test']
     for vdo_name in case:
         images_list = glob.glob(f'{input_directory}/*{vdo_name}*')
         # vdo_name = images_list[0][-22:-13]
         frame_array = []
-        #for sorting the file names properly
-        images_list.sort(key = lambda x: x[-12:-4])
+        # for sorting the file names properly
+        images_list.sort(key=lambda x: x[-12:-4])
         for img_pth in images_list:
             img = cv2.imread(img_pth)
             height, width, channels = img.shape
-            size = (width,height)
-            #inserting the frames into an image array
+            size = (width, height)
+            # inserting the frames into an image array
             frame_array.append(img)
-        out = cv2.VideoWriter(f'{output_directory}/{vdo_name}.avi',cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
+        out = cv2.VideoWriter(
+            f'{output_directory}/{vdo_name}.avi', cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
         for i in range(len(frame_array)):
             # writing to a image array
             out.write(frame_array[i])
         out.release()
+
 
 def get_domainess(cur_iter, total_iter, batch, distribution_type='uniform'):
     """distribution_type : uniform / beta"""
     if distribution_type == 'beta':
         alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
         distribution = Beta(alpha, 1)
-        rand_num =torch.randint(0,2, (1,)) #range 0-1
+        rand_num = torch.randint(0, 2, (1,))  # range 0-1
         if rand_num == 0:
             return distribution.sample((batch, 1)).cuda()
         elif rand_num == 1:
             return 1-distribution.sample((batch, 1)).cuda()
-            
+
     elif distribution_type == 'uniform':
-        distribution  = torch.distributions.uniform.Uniform(0,1)
+        distribution = torch.distributions.uniform.Uniform(0, 1)
         return distribution.sample((batch, 1)).cuda()
 
-def get_domainess_pdf(cur_iter, total_iter,sample_num=10000):
+
+def get_domainess_pdf(cur_iter, total_iter, sample_num=10000):
     alpha = np.exp((cur_iter - (0.5 * total_iter)) / (0.25 * total_iter))
-    x = np.linspace(beta.ppf(0.0001, alpha, 1),beta.ppf(0.9999, alpha, 1), sample_num)
-    density = beta.pdf(x,alpha , 1)
-    return alpha,x ,density
+    x = np.linspace(beta.ppf(0.0001, alpha, 1),
+                    beta.ppf(0.9999, alpha, 1), sample_num)
+    density = beta.pdf(x, alpha, 1)
+    return alpha, x, density
+
 
 if __name__ == '__main__':
     import glob
-    in_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v6/images"
-    out_pth ="/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v6/"
-    visualize_results_to_video(in_pth,out_pth) 
+    in_pth = "/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v6/images"
+    out_pth = "/home/cymb103u/Desktop/Workspace/master/MASTER_MUNIT/outputs/style_shoes_label_folder_v6/"
+    visualize_results_to_video(in_pth, out_pth)
     # print(type(img_list))
 
     # x = np.array([1.223,-1.2,0.745,2.7,-3.501])
@@ -524,7 +562,7 @@ if __name__ == '__main__':
     #     plt.xlabel('x')
     #     plt.ylabel('Density')
     #     ## control x axe and y axe range
-    #     plt.xlim(0, 1) 
+    #     plt.xlim(0, 1)
     #     plt.ylim(0,8)
     #     plt.plot(x, density,'r-', linewidth=1, alpha=0.6, label='beta pdf')
     #     plt.savefig(f'beta_distribution_figures/plt_{current_iter:07d}iter.jpg')
